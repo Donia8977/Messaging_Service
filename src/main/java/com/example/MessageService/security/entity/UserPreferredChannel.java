@@ -1,4 +1,4 @@
-package security.entity;
+package com.example.MessageService.security.entity;
 
 import jakarta.persistence.*;
 

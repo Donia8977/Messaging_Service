@@ -1,4 +1,4 @@
-package security.jwt;
+package com.example.MessageService.security.jwt;
 
 
 import jakarta.servlet.http.HttpServletRequest;

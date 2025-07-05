@@ -1,19 +1,19 @@
-package security.entity;
+package com.example.MessageService.security.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @Data
+@Getter
+@Setter
 public class User {
 
     @Id
@@ -21,7 +21,7 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String username;
 
     @Column(length = 11)
     private String phone;
@@ -42,6 +42,22 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public List<UserPreferredChannel> getPreferredChannels() {
+        return preferredChannels;
+    }
+
+    public void setPreferredChannels(List<UserPreferredChannel> preferredChannels) {
+        this.preferredChannels = preferredChannels;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
@@ -49,8 +65,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPreferredChannel> preferredChannels = new ArrayList<>();
 
-    public User(String name, String phone, String email, String city, LocalDateTime createdAt, Tenant tenant, UserRole role , String password, List<UserPreferredChannel> preferredChannels) {
-        this.name = name;
+    public User(String username, String phone, String email, String city, LocalDateTime createdAt, Tenant tenant, UserRole role , String password, List<UserPreferredChannel> preferredChannels) {
+        this.username = username;
         this.phone = phone;
         this.email = email;
         this.city = city;
@@ -66,8 +82,15 @@ public class User {
     }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public String getEmail() { return email; }

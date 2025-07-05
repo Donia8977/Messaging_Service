@@ -1,4 +1,4 @@
-package security.model;
+package com.example.MessageService.security.model;
 
 public class JwtRequest {
     private String username;
