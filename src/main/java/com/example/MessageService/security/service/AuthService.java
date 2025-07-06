@@ -1,11 +1,9 @@
 package com.example.MessageService.security.service;
 
-import com.example.MessageService.security.dto.LoginRequestDTO;
-import com.example.MessageService.security.dto.LoginResponseDTO;
-import com.example.MessageService.security.dto.RegisterRequestDTO;
-import com.example.MessageService.security.dto.RegisterResponseDTO;
+import com.example.MessageService.security.dto.*;
 
 public interface AuthService {
     RegisterResponseDTO registerTenant(RegisterRequestDTO req);
-    LoginResponseDTO loginTenant(LoginRequestDTO req);
+    JwtResponse loginTenant(LoginRequestDTO req);
+
 }

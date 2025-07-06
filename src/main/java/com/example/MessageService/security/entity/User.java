@@ -1,9 +1,7 @@
 package com.example.MessageService.security.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,9 +9,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
+@AllArgsConstructor
 @Data
-@Getter
-@Setter
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -42,22 +40,6 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
-    public List<UserPreferredChannel> getPreferredChannels() {
-        return preferredChannels;
-    }
-
-    public void setPreferredChannels(List<UserPreferredChannel> preferredChannels) {
-        this.preferredChannels = preferredChannels;
-    }
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
@@ -65,51 +47,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPreferredChannel> preferredChannels = new ArrayList<>();
 
-    public User(String username, String phone, String email, String city, LocalDateTime createdAt, Tenant tenant, UserRole role , String password, List<UserPreferredChannel> preferredChannels) {
-        this.username = username;
-        this.phone = phone;
-        this.email = email;
-        this.city = city;
-        this.createdAt = createdAt;
-        this.tenant = tenant;
-        this.password= password;
-        this.preferredChannels= preferredChannels;
-        this.role= role;
-    }
-
-    public User() {
-
-    }
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public Tenant getTenant() { return tenant; }
-    public void setTenant(Tenant tenant) { this.tenant = tenant; }
 
 
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
 }

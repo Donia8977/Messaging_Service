@@ -36,18 +36,10 @@ public class AuthController {
             @Validated @RequestBody LoginRequestDTO req) {
         log.info("Login attempt for {}", req.getEmail());
 
-        //  service returns raw token + id
-        LoginResponseDTO serviceResp = authService.loginTenant(req);
 
-        //  controller wraps into client contract JwtResponse
-        JwtResponse jwtResp = new JwtResponse(
-                serviceResp.getToken(),
-                "Bearer",
-                serviceResp.getId(),
-                req.getEmail()
-        );
+        JwtResponse response = authService.loginTenant(req);
+        return ResponseEntity.ok(response);
 
-        return ResponseEntity.ok(jwtResp);
     }
 
 

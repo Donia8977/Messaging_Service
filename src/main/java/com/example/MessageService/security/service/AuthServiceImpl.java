@@ -1,7 +1,6 @@
 package com.example.MessageService.security.service;
 
-import com.example.MessageService.security.dto.LoginRequestDTO;
-import com.example.MessageService.security.dto.LoginResponseDTO;
+import com.example.MessageService.security.dto.*;
 import com.example.MessageService.security.exception.EmailAlreadyExistsException;
 import com.example.MessageService.security.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.MessageService.security.dto.RegisterRequestDTO;
-import com.example.MessageService.security.dto.RegisterResponseDTO;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.jwt.JwtUtil;
 
@@ -53,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
         return new RegisterResponseDTO(saved.getId(), saved.getEmail());
     }
 
-    public LoginResponseDTO loginTenant(LoginRequestDTO req) {
+    public JwtResponse loginTenant(LoginRequestDTO req) {
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
         );
@@ -67,7 +64,13 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("Tenant not found: " + email));
 
-        return new LoginResponseDTO(token, tenant.getId());
+        return new JwtResponse(
+                token,
+                "Barear",
+                tenant.getId(),
+                email
+
+        );
     }
 
 }

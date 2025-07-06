@@ -1,9 +1,15 @@
 package com.example.MessageService.security.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_preferred_channels")
+@AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class UserPreferredChannel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +23,5 @@ public class UserPreferredChannel {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public UserPreferredChannel() {}
 
-    public UserPreferredChannel(User user, ChannelType channelType) {
-        this.user = user;
-        this.channelType = channelType;
-    }
 }
