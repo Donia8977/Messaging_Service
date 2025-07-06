@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 public class Template {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
