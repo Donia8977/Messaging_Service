@@ -1,5 +1,7 @@
 package com.example.MessageService.security.entity;
-
+import java.util.HashSet;
+import java.util.Set;
+import com.example.MessageService.segment.entity.Segment;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,7 +50,7 @@ public class User {
     private List<UserPreferredChannel> preferredChannels = new ArrayList<>();
 
 
-
-
-
+    //New
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    private Set<Segment> segments = new HashSet<>();
 }

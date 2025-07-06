@@ -12,10 +12,10 @@ import javax.xml.transform.Source;
 @Mapper(componentModel = "spring")
 public interface TemplateMapper {
 
-   TemplateMapper INSTANCE = Mappers.getMapper(TemplateMapper.class);
-    @Mapping(source = "id" ,target = "id")
-    @Mapping(source = "name" ,target = "name")
-    @Mapping(source = "content" ,target = "content")
-    @Mapping(source = "createdAt" ,target = "createdAt")
+//    TemplateMapper INSTANCE = Mappers.getMapper(TemplateMapper.class);
+//    @Mapping(source = "id" ,target = "id")
+//    @Mapping(source = "name" ,target = "name")
+//    @Mapping(source = "content" ,target = "content")
+//    @Mapping(source = "createdAt" ,target = "createdAt")
     TemplateResponse mapToResponse(Template template);
 }
