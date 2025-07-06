@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "templates")
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
