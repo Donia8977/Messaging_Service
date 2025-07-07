@@ -32,14 +32,5 @@ import java.beans.Expression;
 @Mapper(componentModel = "spring")
 public interface TemplateMapper {
 
-<<<<<<< Updated upstream
-//    TemplateMapper INSTANCE = Mappers.getMapper(TemplateMapper.class);
-//    @Mapping(source = "id" ,target = "id")
-//    @Mapping(source = "name" ,target = "name")
-//    @Mapping(source = "content" ,target = "content")
-//    @Mapping(source = "createdAt" ,target = "createdAt")
-=======
-
->>>>>>> Stashed changes
     TemplateResponse mapToResponse(Template template);
 }
