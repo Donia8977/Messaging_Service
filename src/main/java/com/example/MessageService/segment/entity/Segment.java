@@ -29,7 +29,6 @@ public class Segment {
     private String rulesJson;
 
 
-
     // Many-to-Many relationship with User
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -38,10 +37,6 @@ public class Segment {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> users = new HashSet<>();
-
-
-
-
 
 
     //Relationships
