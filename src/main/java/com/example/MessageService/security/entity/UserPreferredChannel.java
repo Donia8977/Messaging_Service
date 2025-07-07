@@ -24,4 +24,5 @@ public class UserPreferredChannel {
     private User user;
 
 
+
 }
