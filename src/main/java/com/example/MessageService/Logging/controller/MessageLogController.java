@@ -1,7 +1,7 @@
 package com.example.MessageService.Logging.controller;
 
 import com.example.MessageService.Logging.dto.MessageLogResponse;
-import com.example.MessageService.Logging.service.MessageLogService;
+import com.example.MessageService.Logging.service.MessageLogServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MessageLogController {
 
-    private final MessageLogService messageLogService;
+    private final MessageLogServiceImpl messageLogService;
 
 
     @GetMapping("/logging/{messageId}")

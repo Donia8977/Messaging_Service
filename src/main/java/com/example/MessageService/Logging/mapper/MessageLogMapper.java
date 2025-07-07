@@ -12,6 +12,5 @@ public interface MessageLogMapper {
 //    @Mapping(source = "message.id", target = "messageId")
     MessageLogResponse toDto(MessageLog entity);
 
-
     List<MessageLogResponse> toDtoList(List<MessageLog> entities);
 }
