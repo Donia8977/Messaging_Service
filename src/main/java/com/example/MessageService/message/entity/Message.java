@@ -12,7 +12,6 @@ import com.example.MessageService.segment.entity.Segment;
 @Entity
 @Table(name = "messages")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Message {
