@@ -22,4 +22,3 @@ public class MessageSchedulerDto {
     @NotNull
     private Priority priority = Priority.LOW;
 }
-
