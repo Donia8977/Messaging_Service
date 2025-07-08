@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "templates")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
+
 public class Template {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
