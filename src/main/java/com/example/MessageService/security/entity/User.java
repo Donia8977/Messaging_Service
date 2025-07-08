@@ -48,9 +48,6 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt=LocalDateTime.now();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)

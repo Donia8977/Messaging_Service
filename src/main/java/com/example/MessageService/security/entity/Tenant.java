@@ -1,5 +1,6 @@
 package com.example.MessageService.security.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,8 +35,12 @@ public class Tenant {
     protected LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true)
+
     private List<User> users = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
 
 
 

@@ -1,6 +1,7 @@
 package com.example.MessageService.security.service;
 
 import com.example.MessageService.security.dto.*;
+import com.example.MessageService.security.entity.UserRole;
 import com.example.MessageService.security.exception.EmailAlreadyExistsException;
 import com.example.MessageService.security.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         t.setPhone(req.getPhone());
         t.setEmail(req.getEmail());
         t.setPassword(encoder.encode(req.getPassword()));
-
+        t.setRole(UserRole.TENANT);
         Tenant saved = tenantRepo.save(t);
         return new RegisterResponseDTO(saved.getId(), saved.getEmail());
     }

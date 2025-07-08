@@ -10,7 +10,7 @@ import java.util.List;
 public interface SegmentService {
     SegmentResponse createSegment (SegmentRequest request);
     SegmentResponse updateSegment (Long id , SegmentRequest request);
-    List<SegmentResponse> getAllSegments();
-    SegmentResponse getSegmentById(Long Id);
-    void deleteSegment (Long Id);
+    List<SegmentResponse> getAllSegments(Long tenantId);
+    SegmentResponse getSegmentById(Long Id, Long tenantId);
+    void deleteSegment (Long Id, Long tenantId);
 }
