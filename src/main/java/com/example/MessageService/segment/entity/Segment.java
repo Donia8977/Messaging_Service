@@ -12,8 +12,13 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "segments")
-@ToString(exclude = {"tenant"}) // Generates a toString(), excluding lazy-loaded fields
+@Table(
+        name = "segments",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"name", "tenant_id"})
+        }
+)
+@ToString(exclude = {"tenant"})
 @EqualsAndHashCode(of = {"id", "tenant"}) //equality based on id and tenant
 
 public class Segment {
@@ -21,11 +26,12 @@ public class Segment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false , unique = true)
+    @Column(nullable = false)
     private String name;
 
     @Lob
-    private String description;
+    @Column(name = "rules_json", nullable = false, columnDefinition = "TEXT")
+    private String rulesJson;
 
 
     // Many-to-Many relationship with User

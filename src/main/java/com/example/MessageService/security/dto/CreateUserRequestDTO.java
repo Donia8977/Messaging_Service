@@ -1,10 +1,17 @@
 package com.example.MessageService.security.dto;
 
+import com.example.MessageService.security.entity.ChannelType;
+import com.example.MessageService.security.entity.UserPreferredChannel;
+import com.example.MessageService.security.entity.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +30,14 @@ public class CreateUserRequestDTO {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    @NotNull(message = "userType is required")
+    private UserType userType;
+
+
+    @NotNull(message = "you must add at least one preferred channel")
+    private List<ChannelType> preferredChannels;
+
+
+    private String gender;
 }

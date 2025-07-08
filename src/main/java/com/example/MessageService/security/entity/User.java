@@ -32,15 +32,22 @@ public class User {
     @Column(length = 50)
     private String city;
 
+    @Column
+    private int age;
+
+    @Column(length = 50)
+    private String gender;
+
     @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType type;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt=LocalDateTime.now();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)

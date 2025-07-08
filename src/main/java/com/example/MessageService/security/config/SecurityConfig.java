@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/templates/**")
                         .permitAll()
+                        .requestMatchers("/api/tenants/{tenantId}/users").permitAll()
+                        .requestMatchers("/api/segments/**").permitAll()
                         .requestMatchers("/api/logging/**")
                         .permitAll()
                         // everything else requires authentication

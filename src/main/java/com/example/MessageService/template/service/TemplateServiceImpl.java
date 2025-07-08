@@ -1,15 +1,18 @@
 package com.example.MessageService.template.service;
 
+import com.example.MessageService.exception.NotFoundException;
 import com.example.MessageService.template.dto.TemplateRequest;
 import com.example.MessageService.template.dto.TemplateResponse;
 import com.example.MessageService.template.entity.Template;
 import com.example.MessageService.template.mapper.TemplateMapper;
 import com.example.MessageService.template.repository.TemplateRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+@AllArgsConstructor
 @Service
 public class TemplateServiceImpl implements TemplateService{
 
@@ -17,10 +20,7 @@ public class TemplateServiceImpl implements TemplateService{
     private final TemplateMapper templateMapper;
 
     //    @Autowired
-    public TemplateServiceImpl(TemplateRepository templateRepository , TemplateMapper templateMapper) {
-        this.templateRepository = templateRepository;
-        this.templateMapper = templateMapper;
-    }
+
 
     @Override
     public TemplateResponse createTemplate(TemplateRequest request) {
@@ -35,7 +35,7 @@ public class TemplateServiceImpl implements TemplateService{
     @Override
     public TemplateResponse updateTemplate(Long id, TemplateRequest request) {
         Template template = templateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
+                .orElseThrow(() -> new NotFoundException("Template not found"));
         template.setName(request.getName());
         template.setContent(request.getContent());
         template.setUpdatedAt(LocalDateTime.now());
@@ -55,7 +55,7 @@ public class TemplateServiceImpl implements TemplateService{
     @Override
     public TemplateResponse getTemplateById(Long Id) {
         Template template = templateRepository.findById(Id)
-                .orElseThrow(() -> new RuntimeException("template not found") );
+                .orElseThrow(() -> new NotFoundException("template not found") );
         return templateMapper.mapToResponse(template);
 
     }
@@ -63,7 +63,7 @@ public class TemplateServiceImpl implements TemplateService{
     @Override
     public void deleteTemplate(Long Id) {
         Template template = templateRepository.findById(Id)
-                .orElseThrow(() -> new RuntimeException("template not found"));
+                .orElseThrow(() -> new NotFoundException("template not found"));
         templateRepository.deleteById(Id);
     }
 }

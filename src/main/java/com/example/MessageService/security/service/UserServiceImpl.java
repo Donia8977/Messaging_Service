@@ -4,6 +4,7 @@ import com.example.MessageService.security.dto.CreateUserRequestDTO;
 import com.example.MessageService.security.dto.UserResponseDTO;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
+import com.example.MessageService.security.entity.UserPreferredChannel;
 import com.example.MessageService.security.repository.TenantRepository;
 import com.example.MessageService.security.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,31 +28,52 @@ public class UserServiceImpl implements UserService {
         this.tenantRepo = tenantRepo;
         this.encoder    = encoder;
     }
-
     @Override
     @Transactional
     public UserResponseDTO createUser(Long tenantId, CreateUserRequestDTO dto) {
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
 
-        User u = new User();
-        u.setUsername(dto.getUsername());
-        u.setPhone(dto.getPhone());
-        u.setEmail(dto.getEmail());
-        u.setCity(dto.getCity());
-        u.setPassword(encoder.encode(dto.getPassword()));
-        u.setTenant(tenant);
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPhone(dto.getPhone());
+        user.setEmail(dto.getEmail());
+        user.setCity(dto.getCity());
+        user.setPassword(encoder.encode(dto.getPassword()));
+        user.setTenant(tenant);
+        user.setType(dto.getUserType());
+        user.setGender(dto.getGender());
 
-        User saved = userRepo.save(u);
+        // Create UserPreferredChannel entities from ChannelType list
+        List<UserPreferredChannel> preferredChannels = dto.getPreferredChannels().stream()
+                .map(channelType -> {
+                    UserPreferredChannel upc = new UserPreferredChannel();
+                    upc.setChannelType(channelType);
+                    upc.setUser(user); // Set user reference
+                    return upc;
+                }).collect(Collectors.toList());
+
+        user.setPreferredChannels(preferredChannels);
+
+        User saved = userRepo.save(user);
+
         return new UserResponseDTO(
                 saved.getId(),
                 saved.getUsername(),
                 saved.getPhone(),
                 saved.getEmail(),
                 saved.getCity(),
-                saved.getCreatedAt()
+                saved.getCreatedAt(),
+                saved.getType(),
+                saved.getPreferredChannels()
+                        .stream()
+                        .map(pc -> pc.getChannelType())
+                        .toList(),
+                saved.getGender(),
+                saved.getTenant().getName()
         );
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -59,6 +81,7 @@ public class UserServiceImpl implements UserService {
         if (!tenantRepo.existsById(tenantId)) {
             throw new IllegalArgumentException("Tenant not found: " + tenantId);
         }
+
         return userRepo.findByTenantId(tenantId).stream()
                 .map(u -> new UserResponseDTO(
                         u.getId(),
@@ -66,7 +89,14 @@ public class UserServiceImpl implements UserService {
                         u.getPhone(),
                         u.getEmail(),
                         u.getCity(),
-                        u.getCreatedAt()
+                        u.getCreatedAt(),
+                        u.getType(),
+                        u.getPreferredChannels()
+                                .stream()
+                                .map(pc -> pc.getChannelType())
+                                .toList(),
+                        u.getGender(),
+                        u.getTenant().getName()
                 ))
                 .collect(Collectors.toList());
     }
