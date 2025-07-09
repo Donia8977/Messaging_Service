@@ -15,7 +15,6 @@ import com.example.MessageService.segment.entity.Segment;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Message {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,12 +24,9 @@ public class Message {
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "segment_id")
@@ -40,7 +36,6 @@ public class Message {
     @JoinColumn(name = "template_id")
     private Template template;
 
-
     @Lob
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
@@ -48,21 +43,14 @@ public class Message {
     @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
 
-
-
     @Column(name = "send_at")
     private LocalDateTime sendAt;
-
-
-
 
     @Column(name = "retry_count", nullable = false)
     private Integer retryCount = 0;
 
     @Column(name = "max_retries", nullable = false)
     private Integer maxRetries = 3;
-
-
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -75,4 +63,15 @@ public class Message {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ChannelType channel;
+
+
+
+    // --- MODIFICATIONS ---
+    @Column(name = "cron_expression")
+    private String cronExpression;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private MessageStatus status;
 }

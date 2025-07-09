@@ -25,3 +25,4 @@ public interface SegmentMapper {
                 .collect(Collectors.toSet());
     }
 }
+

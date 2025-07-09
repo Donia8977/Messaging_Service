@@ -6,6 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 public interface MessageSchedulerService {
+
     void processMessageRequest(MessageSchedulerDto request);
+
+
     void saveMessage(Message message);
+
+
+
 }

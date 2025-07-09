@@ -44,12 +44,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // allow open access to all /api/auth/** endpoints
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers("/api/templates/**")
-                        .permitAll()
-                        .requestMatchers("/api/tenants/{tenantId}/users").permitAll()
-                        .requestMatchers("/api/segments/**").permitAll()
-                        .requestMatchers("/api/logging/**")
-                        .permitAll()
+                                .requestMatchers("/api/tenants/{tenantId}/users").permitAll()
+//                        .requestMatchers("/api/templates/**")
+//                        .permitAll()
                         // everything else requires authentication
                         .anyRequest().authenticated()
                 )

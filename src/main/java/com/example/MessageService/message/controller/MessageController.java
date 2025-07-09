@@ -18,9 +18,10 @@ public class MessageController {
 
     private final MessageSchedulerService messageSchedulerService;
 
+
     @PostMapping("/api/messages")
     public ResponseEntity<Void> requestMessageCreation(@Valid @RequestBody MessageSchedulerDto request) {
-//        messageSchedulerService.processMessageRequest(request);
+        messageSchedulerService.processMessageRequest(request);
         return ResponseEntity.accepted().build();
     }
 

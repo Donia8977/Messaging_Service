@@ -11,7 +11,8 @@ public class MessageSchedulerServiceImpl implements MessageSchedulerService {
 
     @Override
     public void processMessageRequest(MessageSchedulerDto request) {
-       
+        Message message = new Message();
+
     }
 
     @Override
