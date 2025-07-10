@@ -4,10 +4,9 @@ import com.example.MessageService.message.dto.MessageSchedulerDto;
 
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
-import com.example.MessageService.message.kafka.producer.MessageProducer;
+import com.example.MessageService.message.MessagingSystem.MessageProducer;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.repository.MessageRepository;
-import com.example.MessageService.message.service.MessageService;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.repository.TenantRepository;
@@ -16,6 +15,7 @@ import com.example.MessageService.template.entity.Template;
 import com.example.MessageService.template.repository.TemplateRepository;
 import com.example.MessageService.template.service.TemplateService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
@@ -33,22 +34,6 @@ public class MessageServiceImpl implements MessageService {
     private final TemplateService templateService;
     private final MessageProducer messageProducer;
     private final MessageMapper messageMapper;
-
-    public MessageServiceImpl(MessageRepository messageRepository,
-                              UserRepository userRepository,
-                              TenantRepository tenantRepository,
-                              TemplateRepository templateRepository,
-                              TemplateService templateService,
-                              MessageProducer messageProducer,
-                              MessageMapper messageMapper) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.tenantRepository = tenantRepository;
-        this.templateRepository = templateRepository;
-        this.templateService = templateService;
-        this.messageProducer = messageProducer;
-        this.messageMapper = messageMapper;
-    }
 
     @Override
     @Transactional
