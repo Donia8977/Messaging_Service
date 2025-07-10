@@ -42,7 +42,7 @@ public class MessageSchedulerDto {
     private String cronExpression;
 
     @NotNull
-    private Priority priority = Priority.LOW;
+    private Priority priority = Priority.STANDARD;
     @NotNull
     private UUID idempotencyKey;
 }

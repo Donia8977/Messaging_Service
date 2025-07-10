@@ -58,7 +58,7 @@ public class Message {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Priority priority = Priority.LOW;
+    private Priority priority = Priority.STANDARD;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
