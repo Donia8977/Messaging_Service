@@ -1,4 +1,4 @@
-package com.example.MessageService.message.kafka.producer;
+package com.example.MessageService.message.MessagingSystem;
 import com.example.MessageService.message.entity.Message;
 
 public interface MessageProducer {

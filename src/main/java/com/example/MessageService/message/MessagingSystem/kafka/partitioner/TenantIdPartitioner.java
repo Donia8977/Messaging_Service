@@ -1,11 +1,13 @@
-package com.example.MessageService.message.kafka.partitioner;
+package com.example.MessageService.message.MessagingSystem.kafka.partitioner;
 
 import org.apache.kafka.clients.producer.Partitioner;
 import org.apache.kafka.common.Cluster;
 import org.apache.kafka.common.utils.Utils;
+import org.springframework.context.annotation.Profile;
+
 import java.util.Map;
 
-
+@Profile("kafka")
 public class TenantIdPartitioner implements Partitioner {
     @Override
     public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {

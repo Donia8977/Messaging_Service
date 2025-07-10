@@ -1,19 +1,22 @@
-package com.example.MessageService.message.kafka.producer;
+package com.example.MessageService.message.MessagingSystem.kafka.producer;
 
+import com.example.MessageService.message.MessagingSystem.MessageProducer;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.Priority;
 import com.example.MessageService.security.entity.ChannelType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class MessageProducerImpl implements MessageProducer {
+@Profile("kafka")
+public class KafkaMessageProducerImpl implements MessageProducer {
 
     private final KafkaTemplate<String, Message> kafkaTemplate;
 
-    public MessageProducerImpl(KafkaTemplate<String, Message> kafkaTemplate) {
+    public KafkaMessageProducerImpl(KafkaTemplate<String, Message> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
