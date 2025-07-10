@@ -18,4 +18,6 @@ public class SegmentResponse {
     private String rulesJson;
     private Set<Long> userIds = new HashSet<>();
     private Long tenantId;
+
+
 }
