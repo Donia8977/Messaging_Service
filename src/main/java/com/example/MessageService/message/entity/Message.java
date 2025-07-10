@@ -65,7 +65,6 @@ public class Message {
     private ChannelType channel;
 
 
-
     // --- MODIFICATIONS ---
     @Column(name = "cron_expression")
     private String cronExpression;

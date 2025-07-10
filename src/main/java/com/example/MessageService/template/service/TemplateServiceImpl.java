@@ -1,6 +1,7 @@
 package com.example.MessageService.template.service;
 
 import com.example.MessageService.exception.NotFoundException;
+import com.example.MessageService.security.entity.User;
 import com.example.MessageService.template.dto.TemplateRequest;
 import com.example.MessageService.template.dto.TemplateResponse;
 import com.example.MessageService.template.entity.Template;
@@ -8,18 +9,18 @@ import com.example.MessageService.template.mapper.TemplateMapper;
 import com.example.MessageService.template.repository.TemplateRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @AllArgsConstructor
+
 @Service
 public class TemplateServiceImpl implements TemplateService{
 
     private final TemplateRepository templateRepository;
     private final TemplateMapper templateMapper;
 
-    //    @Autowired
 
 
     @Override
@@ -66,4 +67,15 @@ public class TemplateServiceImpl implements TemplateService{
                 .orElseThrow(() -> new NotFoundException("template not found"));
         templateRepository.deleteById(Id);
     }
+
+
+
+    @Override
+    public String renderTemplate(String templateContent, String username) {
+        if (templateContent == null || username == null) {
+            throw new IllegalArgumentException("Template content and username cannot be null");
+        }
+        return templateContent.replace("${username}", username);
+    }
+
 }

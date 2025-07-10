@@ -17,11 +17,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class MessageSchedulerDto {
 
     @NotNull
-    private int tenantId;
+    private Long tenantId;
 
     @NotNull(message = "targetType must be provided (e.g., USER, SEGMENT)")
     private TargetType targetType;

@@ -6,6 +6,9 @@ package com.example.MessageService.message.service;
 //If the message is scheduled: It is saved to the database for the MessageSchedulingService to find and process later.
 
 
-public interface MessageService {
+import com.example.MessageService.message.dto.MessageSchedulerDto;
+import com.example.MessageService.message.entity.Message;
 
+public interface MessageService {
+    void processAndRouteMessage(MessageSchedulerDto requestDto);
 }

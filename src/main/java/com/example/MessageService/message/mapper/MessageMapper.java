@@ -9,4 +9,5 @@ import java.util.List;
 public interface MessageMapper {
     MessageSchedulerDto toDto(Message entity);
     List<MessageSchedulerDto> toDtoList(List<Message> entities);
+    Message toEntity(MessageSchedulerDto dto);
 }

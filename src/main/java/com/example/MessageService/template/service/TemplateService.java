@@ -11,4 +11,5 @@ public interface TemplateService {
     List<TemplateResponse> getAllTemplates();
     TemplateResponse getTemplateById(Long Id);
     void deleteTemplate (Long Id);
+    public String renderTemplate(String templateContent, String username);
 }
