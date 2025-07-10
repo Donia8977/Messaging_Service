@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface SegmentMapper {
 
-    @Mapping(target = "tenantId", source = "tenant.id")
+    @Mapping(target = "tenantId", source="tenant.id")
     @Mapping(target = "userIds", expression = "java(mapUserIds(segment))")
     SegmentResponse mapToResponse(Segment segment);
 

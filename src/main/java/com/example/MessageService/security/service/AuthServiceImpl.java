@@ -3,6 +3,7 @@ package com.example.MessageService.security.service;
 import com.example.MessageService.security.dto.*;
 import com.example.MessageService.security.entity.UserRole;
 import com.example.MessageService.security.exception.EmailAlreadyExistsException;
+import com.example.MessageService.security.exception.TenantNotFoundException;
 import com.example.MessageService.security.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -59,19 +60,27 @@ public class AuthServiceImpl implements AuthService {
 
         String email = ((UserDetails) auth.getPrincipal()).getUsername();
 
-        String token = jwtUtil.generateToken(email);
-
         Tenant tenant = tenantRepo.findByEmail(email)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("Tenant not found: " + email));
 
+        String token = jwtUtil.generateToken(email, tenant.getRole().name() );
+
+
+
         return new JwtResponse(
                 token,
-                "Barear",
+                "Bearer",
                 tenant.getId(),
                 email
 
         );
+    }
+
+    public void deleteTenant(Long tenantId){
+        Tenant tenant = tenantRepo.findById(tenantId).orElseThrow(() -> new TenantNotFoundException("Tenant not found: " + tenantId));
+
+        tenantRepo.delete(tenant);
     }
 
 }
