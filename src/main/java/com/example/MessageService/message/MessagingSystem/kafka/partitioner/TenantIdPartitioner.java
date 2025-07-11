@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 
 import java.util.Map;
 
-@Profile("kafka")
+
 public class TenantIdPartitioner implements Partitioner {
     @Override
     public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {
