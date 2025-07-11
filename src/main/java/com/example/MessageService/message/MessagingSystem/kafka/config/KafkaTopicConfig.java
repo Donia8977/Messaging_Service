@@ -21,6 +21,7 @@ public class KafkaTopicConfig {
                 .build();
     }
 
+
     @Bean
     public NewTopic emailStandardPriorityTopic() {
         return TopicBuilder.name("email-standard-priority-topic")
@@ -28,4 +29,23 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+
+    @Bean
+    public NewTopic smsHighPriorityTopic() {
+        return TopicBuilder.name("sms-high-priority-topic")
+                .partitions(HIGH_PRIORITY_PARTITIONS)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic smsStandardPriorityTopic() {
+        return TopicBuilder.name("sms-standard-priority-topic")
+                .partitions(STANDARD_PRIORITY_PARTITIONS)
+                .replicas(1)
+                .build();
+    }
+
+
 }
