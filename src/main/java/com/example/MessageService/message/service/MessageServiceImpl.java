@@ -1,6 +1,6 @@
 package com.example.MessageService.message.service;
 
-import com.example.MessageService.message.MessagingSystem.provider.Provider;
+import com.example.MessageService.message.MessagingSystem.provider.EmailProvider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 
 import com.example.MessageService.message.entity.Message;
@@ -36,7 +36,7 @@ public class MessageServiceImpl implements MessageService {
     private final TemplateService templateService;
     private final MessageProducer messageProducer;
     private final MessageMapper messageMapper;
-    private final Provider emailProvider;
+    private final EmailProvider emailProvider;
 
     @Override
     @Transactional
