@@ -1,5 +1,6 @@
 package com.example.MessageService.message.service;
 
+import com.example.MessageService.message.MessagingSystem.provider.Provider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 
 import com.example.MessageService.message.entity.Message;
@@ -7,6 +8,7 @@ import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.MessagingSystem.MessageProducer;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.repository.MessageRepository;
+import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.repository.TenantRepository;
@@ -34,6 +36,7 @@ public class MessageServiceImpl implements MessageService {
     private final TemplateService templateService;
     private final MessageProducer messageProducer;
     private final MessageMapper messageMapper;
+    private final Provider emailProvider;
 
     @Override
     @Transactional
@@ -52,6 +55,9 @@ public class MessageServiceImpl implements MessageService {
             completeMessage.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(completeMessage);
 
+            if (completeMessage.getChannel() == ChannelType.EMAIL) {
+                emailProvider.send(savedMessage);
+            }
             // Send it to Kafka.
             messageProducer.sendMessage(savedMessage);
             log.info("Message ID {} successfully sent to Kafka producer.", savedMessage.getId());
