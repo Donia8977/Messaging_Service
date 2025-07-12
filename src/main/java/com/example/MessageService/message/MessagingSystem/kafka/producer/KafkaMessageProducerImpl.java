@@ -1,8 +1,10 @@
 package com.example.MessageService.message.MessagingSystem.kafka.producer;
 
 import com.example.MessageService.message.MessagingSystem.MessageProducer;
+import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.Priority;
+import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.security.entity.ChannelType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -14,10 +16,14 @@ import org.springframework.stereotype.Service;
 @Profile("kafka")
 public class KafkaMessageProducerImpl implements MessageProducer {
 
-    private final KafkaTemplate<String, Message> kafkaTemplate;
+    private final KafkaTemplate<String, MessageSchedulerDto> kafkaTemplate;
+    private final MessageMapper messageMapper;
 
-    public KafkaMessageProducerImpl(KafkaTemplate<String, Message> kafkaTemplate) {
+
+    public KafkaMessageProducerImpl(KafkaTemplate<String, MessageSchedulerDto> kafkaTemplate,
+                                    MessageMapper messageMapper) {
         this.kafkaTemplate = kafkaTemplate;
+        this.messageMapper = messageMapper;
     }
 
     @Override
@@ -26,17 +32,23 @@ public class KafkaMessageProducerImpl implements MessageProducer {
             log.error("Cannot send a null message or a message without a tenant. Aborting.");
             return;
         }
+
         String topic = getTopicFor(message.getChannel(), message.getPriority());
         String key = message.getTenant().getId().toString();
 
-        log.info("Sending message with key (tenantId) [{}] to topic [{}]", key, topic);
-
         try {
-            kafkaTemplate.send(topic, key, message);
+            MessageSchedulerDto dto = messageMapper.toDto(message);
+
+            log.info("Sending message to topic [{}] for tenantId [{}], channel [{}], targetId [{}]",
+                    topic, key, dto.getChannel(), dto.getTargetId());
+
+            kafkaTemplate.send(topic, key, dto);
+
         } catch (Exception e) {
             log.error("Failed to send message with key [{}] to topic [{}]. Error: {}", key, topic, e.getMessage());
         }
     }
+
 
 
     private String getTopicFor(ChannelType channel, Priority priority) {

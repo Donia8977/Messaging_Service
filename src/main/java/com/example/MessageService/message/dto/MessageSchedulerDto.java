@@ -19,30 +19,22 @@ import java.util.UUID;
 @AllArgsConstructor
 public class MessageSchedulerDto {
 
+    private Long id;
+
     @NotNull
     private Long tenantId;
-
     @NotNull(message = "targetType must be provided (e.g., USER, SEGMENT)")
     private TargetType targetType;
-
     @NotNull(message = "targetId must be provided")
     private Long targetId;
-
     @NotNull(message = "channel must be provided")
     private ChannelType channel;
-
     private Long templateId;
-
     private String content;
-
     @Future(message = "scheduledAt must be in the future")
     private LocalDateTime scheduledAt;
-
     @Size(max = 255)
     private String cronExpression;
-
     @NotNull
     private Priority priority = Priority.STANDARD;
-    @NotNull
-    private UUID idempotencyKey;
 }

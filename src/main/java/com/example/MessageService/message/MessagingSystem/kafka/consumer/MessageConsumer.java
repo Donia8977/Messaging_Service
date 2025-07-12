@@ -1,6 +1,8 @@
 package com.example.MessageService.message.MessagingSystem.kafka.consumer;
 
+import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.entity.Message;
+import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.MessagingSystem.kafka.consumer.handler.MessageHandler;
 import com.example.MessageService.security.entity.ChannelType;
 import jakarta.annotation.PostConstruct;
@@ -21,10 +23,12 @@ import java.util.stream.Collectors;
 public class MessageConsumer {
 
     private final Map<ChannelType, MessageHandler> handlerRegistry;
+    private final MessageMapper messageMapper;
 
-    public MessageConsumer(List<MessageHandler> handlers) {
+    public MessageConsumer(List<MessageHandler> handlers, MessageMapper messageMapper) {
         this.handlerRegistry = handlers.stream()
                 .collect(Collectors.toMap(MessageHandler::getSupportedChannel, Function.identity()));
+        this.messageMapper = messageMapper;
     }
 
     @PostConstruct
@@ -40,15 +44,16 @@ public class MessageConsumer {
             groupId = "unified-message-consumer-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
+    public void listen(@Payload MessageSchedulerDto dto, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        Message message = messageMapper.toEntity(dto);
+        log.info("The consumer received message on topic '{}' for channel {} and target ID {}", topic, message.getChannel(), dto.getTargetId());
 
-    public void listen(@Payload Message message, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        log.info("The consumer received message on topic '{}' for channel {}", topic, message.getChannel());
         MessageHandler handler = handlerRegistry.get(message.getChannel());
+
         if (handler != null) {
             handler.handle(message);
         } else {
-            log.warn("No message handler found for channel: {}. Cannot process message ID: {}",
-                    message.getChannel(), message.getId());
+            log.warn("No message handler found for channel: {}. Skipping message for target ID: {}", message.getChannel(), dto.getTargetId());
         }
     }
 }
