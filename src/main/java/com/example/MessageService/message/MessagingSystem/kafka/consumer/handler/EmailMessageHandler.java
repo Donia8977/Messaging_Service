@@ -18,18 +18,15 @@ import java.time.LocalDateTime;
 @Slf4j
 public class EmailMessageHandler implements MessageHandler {
 
-    // These dependencies are required immediately, so they can be final.
     private final EmailProviderImpl emailProvider;
     private final MessageRepository messageRepository;
 
-    // THIS IS THE FIX: The self-injected proxy cannot be a 'final' field
-    // because its full initialization is delayed by @Lazy.
+
     private final EmailMessageHandler self;
 
-    // The constructor now correctly uses @Lazy to break the creation cycle.
     public EmailMessageHandler(EmailProviderImpl emailProvider,
                                MessageRepository messageRepository,
-                               @Lazy EmailMessageHandler self) { // @Lazy defers initialization of 'self'
+                               @Lazy EmailMessageHandler self) {
         this.emailProvider = emailProvider;
         this.messageRepository = messageRepository;
         this.self = self;
@@ -50,13 +47,13 @@ public class EmailMessageHandler implements MessageHandler {
 
         try {
             emailProvider.send(managedMessage);
-
             managedMessage.setStatus(MessageStatus.SENT);
             managedMessage.setSendAt(LocalDateTime.now());
+
             log.info("Successfully sent email for message ID: {}. Status updated to SENT.", managedMessage.getId());
 
-        } catch (Exception e) {
-            log.error("Email sending failed for message ID: {}. Updating failure status and triggering retry.", managedMessage.getId());
+        }  catch (Exception e) {
+            log.error("Email sending failed for message ID: {}. Error: {}", managedMessage.getId(), e.getMessage(), e);
             self.updateStatusOnFailure(managedMessage.getId());
             throw new RuntimeException("Email sending failed, triggering retry for message ID " + managedMessage.getId(), e);
         }
@@ -74,7 +71,6 @@ public class EmailMessageHandler implements MessageHandler {
                     msg.setStatus(MessageStatus.FAILED);
                     log.warn("Max retries reached for message ID: {}. Marking as FAILED.", messageId);
                 }
-
                 messageRepository.save(msg);
             });
         } catch (Exception dbEx) {

@@ -14,8 +14,4 @@ public class EmailDetails {
     private String content;
     private String password;
     private String subject;
-
-
-
-
 }
