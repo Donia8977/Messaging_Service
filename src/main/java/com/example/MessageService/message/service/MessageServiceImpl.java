@@ -55,10 +55,6 @@ public class MessageServiceImpl implements MessageService {
             completeMessage.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(completeMessage);
 
-            if (completeMessage.getChannel() == ChannelType.EMAIL) {
-                emailProvider.send(savedMessage);
-            }
-            // Send it to Kafka.
             messageProducer.sendMessage(savedMessage);
             log.info("Message ID {} successfully sent to Kafka producer.", savedMessage.getId());
         }
@@ -66,24 +62,32 @@ public class MessageServiceImpl implements MessageService {
 
 
     private Message buildCompleteMessageFromDto(MessageSchedulerDto dto) {
+
         User user = userRepository.findById(dto.getTargetId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + dto.getTargetId()));
 
         Tenant tenant = tenantRepository.findById(dto.getTenantId())
                 .orElseThrow(() -> new EntityNotFoundException("Tenant not found with id: " + dto.getTenantId()));
 
-        Template template = templateRepository.findById(dto.getTemplateId())
-                .orElseThrow(() -> new EntityNotFoundException("Template not found with id: " + dto.getTemplateId()));
-
-
-        log.debug("Rendering template {} for user {}", template.getId(), user.getId());
-        String renderedContent = templateService.renderTemplate(template.getContent(), user.getUsername());
 
         Message message = messageMapper.toEntity(dto);
+        if (dto.getTemplateId() != null) {
+            log.debug("Template ID provided: {}", dto.getTemplateId());
+            Template template = templateRepository.findById(dto.getTemplateId())
+                    .orElseThrow(() -> new EntityNotFoundException("Template not found with id: " + dto.getTemplateId()));
+
+            log.debug("Rendering template {} for user {}", template.getId(), user.getId());
+            String renderedContent = templateService.renderTemplate(template.getContent(), user.getUsername());
+
+            message.setTemplate(template);
+            message.setContent(renderedContent);
+
+        } else {
+            log.debug("No template ID provided, using content directly.");
+        }
+
         message.setUser(user);
         message.setTenant(tenant);
-        message.setTemplate(template);
-        message.setContent(renderedContent);
         message.setCreatedAt(LocalDateTime.now());
         log.debug("Successfully built complete message object for {}", tenant.getName());
         return message;

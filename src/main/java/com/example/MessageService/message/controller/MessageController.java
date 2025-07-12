@@ -3,6 +3,7 @@ package com.example.MessageService.message.controller;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.service.MessageSchedulerService;
 import com.example.MessageService.message.service.MessageSchedulerServiceImpl;
+import com.example.MessageService.message.service.MessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MessageController {
 
-    private final MessageSchedulerService messageSchedulerService;
+    private final MessageService messageService;
 
 
-    @PostMapping("/api/messages")
+    @PostMapping("/request")
     public ResponseEntity<Void> requestMessageCreation(@Valid @RequestBody MessageSchedulerDto request) {
-        messageSchedulerService.processMessageRequest(request);
+        messageService.processAndRouteMessage(request);
         return ResponseEntity.accepted().build();
     }
 
