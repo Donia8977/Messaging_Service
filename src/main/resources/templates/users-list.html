@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto mt-10 mb-10">
+    <div class="bg-white p-8 rounded-lg shadow-lg">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Your Users</h1>
+                <p class="text-gray-500">A list of all users in your organization.</p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard/users/new}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300 inline-block">
+                    + Create New User
+                </a>
+                <a th:href="@{/dashboard}" class="ml-2 text-gray-600 hover:text-gray-800 transition">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- User Table -->
+        <div class="overflow-x-auto">
+            <!-- Case for when there are no users -->
+            <div th:if="${#lists.isEmpty(users)}" class="text-center py-10 px-6 bg-gray-50 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-700">No Users Found</h3>
+                <p class="text-gray-500 mt-2">You haven't created any users yet. Get started by creating one!</p>
+            </div>
+
+            <!-- Table displayed only if users exist -->
+            <table th:unless="${#lists.isEmpty(users)}" class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Username</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Email</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Phone</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">User Type</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Created At</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:each="user : ${users}" class="border-b border-gray-200 hover:bg-gray-100">
+                    <td class="text-left py-3 px-4" th:text="${user.username}">John Doe</td>
+                    <td class="text-left py-3 px-4" th:text="${user.email}">john.doe@example.com</td>
+                    <td class="text-left py-3 px-4" th:text="${user.phone ?: '-'}">123-456-7890</td>
+                    <td class="text-left py-3 px-4">
+                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full" th:text="${user.userType}">
+                                REGULAR
+                            </span>
+                    </td>
+                    <td class="text-left py-3 px-4" th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2025-07-12 18:00</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
