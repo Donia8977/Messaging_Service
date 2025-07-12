@@ -2,6 +2,7 @@ package com.example.MessageService.security.entity;
 import java.util.HashSet;
 import java.util.Set;
 import com.example.MessageService.segment.entity.Segment;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -53,11 +54,14 @@ public class User {
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserPreferredChannel> preferredChannels = new ArrayList<>();
 
+    public User(Long id) {
+        this.id = id;
+    }
 
-    //New
-    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    private Set<Segment> segments = new HashSet<>();
+//    To Stop unidirectional ManyToMany relationship with Segment
+
+//    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+//    @JsonManagedReference("user-segments")
+//    private Set<Segment> segments = new HashSet<>();
 }

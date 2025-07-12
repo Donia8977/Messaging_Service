@@ -1,5 +1,6 @@
 package com.example.MessageService.segment.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import com.example.MessageService.security.entity.Tenant;
@@ -49,5 +50,9 @@ public class Segment {
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
 
+
+    public Segment(Long id) {
+        this.id = id;
+    }
 
 }

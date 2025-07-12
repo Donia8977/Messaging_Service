@@ -34,16 +34,8 @@ public class Tenant {
     @Column(name = "created_at", nullable = false, updatable = false)
     protected LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true)
-
-    private List<User> users = new ArrayList<>();
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
-
-
-
-
 
 }
