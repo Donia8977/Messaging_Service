@@ -57,7 +57,7 @@ public class Message {
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false , length = 20)
     private Priority priority = Priority.STANDARD;
 
     @Enumerated(EnumType.STRING)

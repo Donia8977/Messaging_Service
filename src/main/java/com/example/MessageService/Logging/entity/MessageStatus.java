@@ -1,7 +1,7 @@
-package com.example.MessageService.Logging.entity;
-
-public enum MessageStatus {
-    PENDING,
-    SENT,
-    FAILED
-}
+//package com.example.MessageService.Logging.entity;
+//
+//public enum MessageStatus {
+//    PENDING,
+//    SENT,
+//    FAILED
+//}

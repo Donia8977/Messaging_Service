@@ -1,5 +1,6 @@
 package com.example.MessageService.message.service;
 
+import com.example.MessageService.Logging.service.MessageLogService;
 import com.example.MessageService.message.MessagingSystem.provider.EmailProvider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 
@@ -37,6 +38,7 @@ public class MessageServiceImpl implements MessageService {
     private final MessageProducer messageProducer;
     private final MessageMapper messageMapper;
     private final EmailProvider emailProvider;
+    private final MessageLogService messageLogService;
 
     @Override
     @Transactional
@@ -49,11 +51,15 @@ public class MessageServiceImpl implements MessageService {
         if (requestDto.getScheduledAt() != null || requestDto.getCronExpression() != null) {
             log.info("Message from {} is scheduled. Saving to database.", completeMessage.getTenant().getName());
             completeMessage.setStatus(MessageStatus.SCHEDULED);
-            messageRepository.save(completeMessage);
+            Message savedMessage = messageRepository.save(completeMessage);
+
+            messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled for future delivery.");
         } else {
             log.info("Message from {} is immediate. Saving and sending to Kafka.", completeMessage.getTenant().getName());
             completeMessage.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(completeMessage);
+
+            messageLogService.createLog(savedMessage, MessageStatus.PENDING, "Message sent to processing queue (Kafka).");
 
             messageProducer.sendMessage(savedMessage);
             log.info("Message ID {} successfully sent to Kafka producer.", savedMessage.getId());
