@@ -69,8 +69,11 @@
                 <h3 class="text-xl font-semibold text-gray-800 text-center mb-2">Manage Segments</h3>
                 <p class="text-gray-600 text-center mb-4">Create targeted user segments for your campaigns.</p>
                 <div class="text-center">
-                    <a href="#" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 inline-block">
-                        Create Segment
+                    <a th:href="@{/dashboard/segments/new}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 inline-block">
+                        Create New
+                    </a>
+                    <a th:href="@{/dashboard/segments}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full transition duration-300 inline-block">
+                        View All
                     </a>
                 </div>
             </div>

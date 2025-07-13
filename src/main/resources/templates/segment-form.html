@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Segment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto mt-10 mb-10 max-w-2xl">
+    <div class="bg-white p-8 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Create a New Segment</h1>
+            <a th:href="@{/dashboard/segments}" class="text-indigo-600 hover:text-indigo-800 transition">← Back to Segments</a>
+        </div>
+
+        <div th:if="${errorMessage}" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-100" role="alert">
+            <span class="font-medium">Error!</span> <span th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/dashboard/segments/create}" th:object="${segmentRequest}" method="post" class="space-y-6">
+            <!-- Segment Name -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Segment Name</label>
+                <input type="text" id="name" th:field="*{name}" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-600"></p>
+            </div>
+
+            <!-- select users -->
+            <div>
+                <label for="userIds" class="block text-sm font-medium text-gray-700">Add Users to Segment</label>
+                <select id="userIds" th:field="*{userIds}" multiple="multiple" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        size="8">
+                    <option th:each="user : ${tenantUsers}"
+                            th:value="${user.id}"
+                            th:text="${user.username} + ' (' + ${user.email} + ')'"></option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Hold Ctrl (or Cmd on Mac) to select multiple users.</p>
+                <p th:if="${#fields.hasErrors('userIds')}" th:errors="*{userIds}" class="mt-1 text-sm text-red-600"></p>
+            </div>
+
+            <div>
+                <label for="rulesJson" class="block text-sm font-medium text-gray-700">Rules (JSON format, optional)</label>
+                <textarea id="rulesJson" th:field="*{rulesJson}" rows="4"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder='e.g., {"city": "New York"}'></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4">
+                <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create Segment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
