@@ -1,5 +1,10 @@
 package com.example.MessageService.security.service;
 
+import com.example.MessageService.exception.NotFoundException;
+import com.example.MessageService.exception.UnauthorizedException;
+import com.example.MessageService.message.entity.Message;
+import com.example.MessageService.message.repository.MessageRepository;
+import com.example.MessageService.message.repository.MessageRepositoryWeb;
 import com.example.MessageService.security.dto.CreateUserRequestDTO;
 import com.example.MessageService.security.dto.UserResponseDTO;
 import com.example.MessageService.security.entity.ChannelType;
@@ -9,6 +14,8 @@ import com.example.MessageService.security.entity.UserPreferredChannel;
 import com.example.MessageService.security.repository.TenantRepository;
 import com.example.MessageService.security.repository.UserPreferredChannelRepository; // <-- 1. IMPORT THIS
 import com.example.MessageService.security.repository.UserRepository;
+import com.example.MessageService.segment.entity.Segment;
+import com.example.MessageService.segment.repository.SegmentRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +29,20 @@ public class UserServiceImpl implements UserService {
     private final TenantRepository tenantRepo;
     private final PasswordEncoder encoder;
     private final UserPreferredChannelRepository preferredChannelRepo;
+    private final SegmentRepository segmentRepository;
+    private final MessageRepositoryWeb messageRepositoryWeb;
 
     public UserServiceImpl(UserRepository userRepo,
                            TenantRepository tenantRepo,
                            PasswordEncoder encoder,
-                           UserPreferredChannelRepository preferredChannelRepo) {
+                           UserPreferredChannelRepository preferredChannelRepo, SegmentRepository segmentRepository, MessageRepository messageRepository, MessageRepositoryWeb messageRepositoryWeb) {
         this.userRepo = userRepo;
         this.tenantRepo = tenantRepo;
         this.encoder = encoder;
         this.preferredChannelRepo = preferredChannelRepo;
+        this.segmentRepository = segmentRepository;
+
+        this.messageRepositoryWeb = messageRepositoryWeb;
     }
 
     @Override
@@ -105,5 +117,76 @@ public class UserServiceImpl implements UserService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId, Long tenantId) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with ID " + userId + " not found."));
+
+        if (!user.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("You are not authorized to delete this user.");
+        }
+
+
+        List<Segment> segmentsContainingUser = segmentRepository.findSegmentsByUserId(userId);
+        if (!segmentsContainingUser.isEmpty()) {
+
+            for (Segment segment : segmentsContainingUser) {
+                segment.getUsers().remove(user);
+            }
+            segmentRepository.saveAll(segmentsContainingUser);
+        }
+
+        List<Message> messagesToUpdate = messageRepositoryWeb.findByUserId(userId);
+        if (!messagesToUpdate.isEmpty()) {
+            messagesToUpdate.forEach(message -> message.setUser(null));
+            messageRepositoryWeb.saveAll(messagesToUpdate);
+        }
+
+        List<UserPreferredChannel> channels = preferredChannelRepo.findByUserId(userId);
+        preferredChannelRepo.deleteAll(channels);
+
+        userRepo.delete(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllUsersByTenant(Long tenantId) {
+        List<User> usersToDelete = userRepo.findByTenantId(tenantId);
+        if (usersToDelete.isEmpty()) {
+            return;
+        }
+
+        List<Long> userIds = usersToDelete.stream().map(User::getId).collect(Collectors.toList());
+
+        for(Long userId : userIds) {
+
+            List<Segment> segmentsContainingUser = segmentRepository.findSegmentsByUserId(userId);
+            if (!segmentsContainingUser.isEmpty()) {
+
+                User userToRemove = usersToDelete.stream().filter(u -> u.getId().equals(userId)).findFirst().get();
+                for (Segment segment : segmentsContainingUser) {
+                    segment.getUsers().remove(userToRemove);
+                }
+                segmentRepository.saveAll(segmentsContainingUser);
+            }
+
+            List<Message> messagesToUpdate = messageRepositoryWeb.findByUserId(userId);
+            if (!messagesToUpdate.isEmpty()) {
+                messagesToUpdate.forEach(msg -> msg.setUser(null));
+                messageRepositoryWeb.saveAll(messagesToUpdate);
+            }
+
+
+            List<UserPreferredChannel> channels = preferredChannelRepo.findByUserId(userId);
+            if (!channels.isEmpty()) {
+                preferredChannelRepo.deleteAll(channels);
+            }
+        }
+
+        userRepo.deleteAll(usersToDelete);
     }
 }

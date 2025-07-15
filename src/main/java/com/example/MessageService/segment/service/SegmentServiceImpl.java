@@ -8,26 +8,29 @@ import com.example.MessageService.security.repository.TenantRepository;
 import com.example.MessageService.security.repository.UserRepository;
 import com.example.MessageService.segment.dto.SegmentRequest;
 import com.example.MessageService.segment.dto.SegmentResponse;
+import com.example.MessageService.segment.dto.SegmentRuleRequest;
 import com.example.MessageService.segment.entity.Segment;
 import com.example.MessageService.segment.mapper.SegmentMapper;
 import com.example.MessageService.segment.repository.SegmentRepository;
 import com.example.MessageService.template.repository.TemplateRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class SegmentServiceImpl implements SegmentService{
     private final UserRepository userRepository;
     private final TenantRepository tenantRepository;
     private  final SegmentRepository segmentRepository;
     private  final SegmentMapper segmentMapper;
+    private final ObjectMapper objectMapper;
 
     public SegmentResponse createSegment(SegmentRequest request) {
 
@@ -107,5 +110,41 @@ public class SegmentServiceImpl implements SegmentService{
             throw new UnauthorizedException("You do not have access to this segment");
         segmentRepository.delete(segment);
     }
+
+
+    public SegmentResponse createSegmentFromRules(SegmentRuleRequest ruleRequest, Long tenantId) {
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new NotFoundException("Tenant not found"));
+
+        Map<String, Object> criteria = new HashMap<>();
+        criteria.put("cities", ruleRequest.getCities());
+        criteria.put("userTypes", ruleRequest.getUserTypes());
+       // criteria.put("gender", ruleRequest.getGenders());
+
+       // List<User> foundUsers = userRepository.findUsersByCriteria(criteria, tenantId);
+        List<User> foundUsers = userRepository.findUsersByAnyCriteria(criteria, tenantId);
+        Set<User> users = Set.copyOf(foundUsers);
+
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("No users found matching the specified criteria. The segment cannot be empty.");
+        }
+
+        Segment segment = new Segment();
+        segment.setName(ruleRequest.getName());
+        try {
+            String rulesAsJson = objectMapper.writeValueAsString(criteria);
+            segment.setRulesJson(rulesAsJson);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize segment rules to JSON", e);
+            segment.setRulesJson("{}");
+        }
+        segment.setUsers(users);
+        segment.setTenant(tenant);
+
+        Segment saved = segmentRepository.save(segment);
+        return segmentMapper.mapToResponse(saved);
+    }
+
+
 }
 

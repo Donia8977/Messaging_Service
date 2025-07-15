@@ -8,6 +8,10 @@
 </head>
 <body class="bg-gray-100">
 
+<script th:inline="javascript">
+    const allUsers = JSON.parse(/*[[${tenantUsersJson}]]*/ '[]');
+</script>
+
 <div class="container mx-auto mt-10 mb-10 max-w-2xl">
     <div class="bg-white p-8 rounded-lg shadow-lg">
         <div class="flex justify-between items-center mb-6">
@@ -28,26 +32,45 @@
                 <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-1 text-sm text-red-600"></p>
             </div>
 
-            <!-- select users -->
-            <div>
-                <label for="userIds" class="block text-sm font-medium text-gray-700">Add Users to Segment</label>
-                <select id="userIds" th:field="*{userIds}" multiple="multiple" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        size="8">
-                    <option th:each="user : ${tenantUsers}"
-                            th:value="${user.id}"
-                            th:text="${user.username} + ' (' + ${user.email} + ')'"></option>
-                </select>
-                <p class="mt-1 text-sm text-gray-500">Hold Ctrl (or Cmd on Mac) to select multiple users.</p>
-                <p th:if="${#fields.hasErrors('userIds')}" th:errors="*{userIds}" class="mt-1 text-sm text-red-600"></p>
+            <hr/>
+            <h2 class="text-lg font-semibold text-gray-700">Rules</h2>
+
+
+            <div id="city-filter">
+                <label class="block text-sm font-medium text-gray-700">City</label>
+                <div class="mt-2 space-y-2 max-h-40 overflow-y-auto border p-2 rounded-md">
+                    <div th:each="c : ${distinctCities}" class="flex items-center">
+                        <input th:id="${'city-' + c}" th:field="*{cities}" th:value="${c}" type="checkbox"
+                               class="filter-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label th:for="${'city-' + c}" class="ml-3 block text-sm text-gray-900" th:text="${c}"></label>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <label for="rulesJson" class="block text-sm font-medium text-gray-700">Rules (JSON format, optional)</label>
-                <textarea id="rulesJson" th:field="*{rulesJson}" rows="4"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                          placeholder='e.g., {"city": "New York"}'></textarea>
+            <div id="usertype-filter">
+                <label class="block text-sm font-medium text-gray-700">User Type</label>
+                <div class="mt-2 space-y-2">
+                    <div th:each="t : ${allUserTypes}" class="flex items-center">
+                        <input th:id="${'type-' + t.name()}" th:field="*{userTypes}" th:value="${t}" type="checkbox"
+                               class="filter-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label th:for="${'type-' + t.name()}" class="ml-3 block text-sm text-gray-900" th:text="${t.name()}"></label>
+                    </div>
+                </div>
             </div>
+
+            <!-- 2. GENDER CHECKBOXES (Replaces the old <select> dropdown) -->
+<!--            <div id="gender-filter">-->
+<!--                <label class="block text-sm font-medium text-gray-700">Gender</label>-->
+<!--                <div class="mt-2 space-y-2">-->
+<!--                    &lt;!&ndash; Loop through the 'allGenders' list provided by the controller &ndash;&gt;-->
+<!--                    <div th:each="g : ${allGenders}" class="flex items-center">-->
+<!--                        &lt;!&ndash; th:field="*{genders}" binds the selections to the correct list in the DTO &ndash;&gt;-->
+<!--                        <input th:id="${'gender-' + g}" th:field="*{genders}" th:value="${g}" type="checkbox"-->
+<!--                               class="filter-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">-->
+<!--                        <label th:for="${'gender-' + g}" class="ml-3 block text-sm text-gray-900" th:text="${g}"></label>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
 
             <!-- Submit Button -->
             <div class="pt-4">
@@ -59,6 +82,61 @@
         </form>
     </div>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const allCheckboxes = document.querySelectorAll('.filter-checkbox');
+
+        const getSelected = (selector) => Array.from(document.querySelectorAll(`${selector}:checked`)).map(cb => cb.value);
+
+        function updateAvailableOptions() {
+            const selectedCities = getSelected('#city-filter input');
+            const selectedUserTypes = getSelected('#usertype-filter input');
+
+            function userMatches(user, cities, types) {
+                const cityMatch = cities.length === 0 || cities.includes(user.city);
+                const typeMatch = types.length === 0 || types.includes(user.userType);
+                return cityMatch && typeMatch;
+            }
+
+            function updateCheckboxGroup(selector, property, currentSelections) {
+                document.querySelectorAll(selector).forEach(checkbox => {
+                    if (checkbox.checked) {
+                        checkbox.disabled = false;
+                        checkbox.parentElement.classList.remove('opacity-50', 'disabled-label');
+                        return;
+                    }
+
+                    const potentialSelections = [...currentSelections, checkbox.value];
+
+                    const isPossible = allUsers.some(user => {
+                        if (property === 'city') {
+                            return userMatches(user, potentialSelections, selectedUserTypes);
+                        }
+                        if (property === 'userType') {
+                            return userMatches(user, selectedCities, potentialSelections);
+                        }
+                        return false;
+                    });
+
+                    checkbox.disabled = !isPossible;
+                    checkbox.parentElement.classList.toggle('opacity-50', !isPossible);
+                    checkbox.parentElement.classList.toggle('disabled-label', !isPossible);
+                });
+            }
+
+            updateCheckboxGroup('#city-filter input', 'city', selectedCities);
+            updateCheckboxGroup('#usertype-filter input', 'userType', selectedUserTypes);
+        }
+
+        allCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateAvailableOptions);
+        });
+
+        updateAvailableOptions();
+    });
+</script>
 
 </body>
 </html>

@@ -14,10 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -79,5 +76,34 @@ public class UserWebController {
         List<UserResponseDTO> users = userService.getUsersByTenant(currentTenant.getId());
         model.addAttribute("users", users);
         return "users-list";
+    }
+
+    @PostMapping("/{userId}/delete")
+    public String deleteUser(@PathVariable Long userId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             RedirectAttributes redirectAttributes) {
+
+        Tenant currentTenant = getCurrentTenant(userDetails);
+        try {
+            userService.deleteUser(userId, currentTenant.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "User with ID " + userId + " has been deleted.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+        }
+        return "redirect:/dashboard/users";
+    }
+
+    @PostMapping("/delete-all")
+    public String deleteAllUsers(@AuthenticationPrincipal UserDetails userDetails,
+                                 RedirectAttributes redirectAttributes) {
+
+        Tenant currentTenant = getCurrentTenant(userDetails);
+        try {
+            userService.deleteAllUsersByTenant(currentTenant.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "All users have been successfully deleted.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "An error occurred while deleting all users: " + e.getMessage());
+        }
+        return "redirect:/dashboard/users";
     }
 }
