@@ -4,6 +4,7 @@ import com.example.MessageService.template.dto.TemplateRequest;
 import com.example.MessageService.template.dto.TemplateResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TemplateService {
     TemplateResponse createTemplate (TemplateRequest request);
@@ -11,5 +12,5 @@ public interface TemplateService {
     List<TemplateResponse> getAllTemplates();
     TemplateResponse getTemplateById(Long Id);
     void deleteTemplate (Long Id);
-    public String renderTemplate(String templateContent, String username);
+    String renderTemplate(String templateContent, Map<String, String> data);
 }
