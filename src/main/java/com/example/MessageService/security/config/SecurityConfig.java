@@ -2,9 +2,9 @@ package com.example.MessageService.security.config;
 import com.example.MessageService.security.jwt.JwtAuthenticationEntryPoint;
 import com.example.MessageService.security.jwt.JwtRequestFilter;
 import com.example.MessageService.security.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -14,71 +14,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.*;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-
     private final JwtAuthenticationEntryPoint jwtAuthEntryPoint;
-
     private final CustomUserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
 
-    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthEntryPoint, CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
-        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
-        this.userDetailsService = userDetailsService;
-        this.jwtRequestFilter = jwtRequestFilter;
-    }
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // disable CSRF since we’re using JWT stateless auth
-                .csrf(csrf -> csrf.disable())
-
-                // configure URL authorization
-                .authorizeHttpRequests(auth -> auth
-                        // allow open access to all /api/auth/** endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-
-//                        .requestMatchers("/api/templates/**")
-//                        .permitAll()
-//
-
-                                .requestMatchers("/api/segments/**").hasRole("TENANT")
-                                .requestMatchers("/api/tenants/*/users").hasRole("TENANT")
-                                .requestMatchers("/api/admins/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
-                )
-
-                // handle auth errors
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jwtAuthEntryPoint)
-                )
-
-                // no session will be created or used by Spring Security
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // set a custom UserDetailsService and PasswordEncoder
-                .authenticationProvider(daoAuthenticationProvider());
-
-        // add our JWT filter before the username/password filter
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
-            throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -86,10 +40,54 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+
+        http
+
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+
+                // --- Authorization Rules ---
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers( "/register", "/login",
+                                "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/dashboard/**").hasRole("TENANT")
+                        .requestMatchers("/api/segments/**").hasRole("TENANT")
+                        .requestMatchers("/api/tenants/*/users").hasRole("TENANT")
+                        .requestMatchers("/api/admins/**").hasRole("ADMIN")
+                        .requestMatchers("/favicon.ico").permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                );
+
+        http.authenticationProvider(daoAuthenticationProvider());
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.MessageService.Logging.entity;
 
 import com.example.MessageService.message.entity.Message;
+import com.example.MessageService.message.entity.MessageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,6 +26,7 @@ public class MessageLog {
 
 
     //Log Details
+    //MessageStatus that is in message folder
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageStatus status;

@@ -10,8 +10,9 @@ import java.util.List;
 
 public interface UserService {
     UserResponseDTO createUser(Long tenantId, CreateUserRequestDTO dto);
-
     List<UserResponseDTO> getUsersByTenant(Long tenantId);
+    void deleteUser(Long userId, Long tenantId);
+    void deleteAllUsersByTenant(Long tenantId);
 }
 
 

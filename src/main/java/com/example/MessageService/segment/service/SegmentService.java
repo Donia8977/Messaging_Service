@@ -2,6 +2,7 @@ package com.example.MessageService.segment.service;
 
 import com.example.MessageService.segment.dto.SegmentRequest;
 import com.example.MessageService.segment.dto.SegmentResponse;
+import com.example.MessageService.segment.dto.SegmentRuleRequest;
 import com.example.MessageService.template.dto.TemplateRequest;
 import com.example.MessageService.template.dto.TemplateResponse;
 
@@ -13,4 +14,5 @@ public interface SegmentService {
     List<SegmentResponse> getAllSegments(Long tenantId);
     SegmentResponse getSegmentById(Long Id, Long tenantId);
     void deleteSegment (Long Id, Long tenantId);
+    SegmentResponse createSegmentFromRules (SegmentRuleRequest ruleRequest, Long tenantId);
 }
