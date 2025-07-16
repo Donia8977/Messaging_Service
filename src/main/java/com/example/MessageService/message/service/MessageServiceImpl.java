@@ -3,7 +3,6 @@ package com.example.MessageService.message.service;
 import com.example.MessageService.Logging.service.MessageLogService;
 import com.example.MessageService.message.MessagingSystem.provider.EmailProvider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
-
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.MessagingSystem.MessageProducer;
@@ -15,13 +14,13 @@ import com.example.MessageService.security.repository.TenantRepository;
 import com.example.MessageService.security.repository.UserRepository;
 import com.example.MessageService.template.entity.Template;
 import com.example.MessageService.template.repository.TemplateRepository;
+import com.example.MessageService.template.service.FieldExtractorUtil;
 import com.example.MessageService.template.service.TemplateService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 
 @Service
@@ -38,6 +37,7 @@ public class MessageServiceImpl implements MessageService {
     private final MessageMapper messageMapper;
     private final EmailProvider emailProvider;
     private final MessageLogService messageLogService;
+    private final FieldExtractorUtil fieldExtractorUtil;
 
     @Override
     @Transactional
@@ -83,7 +83,7 @@ public class MessageServiceImpl implements MessageService {
                     .orElseThrow(() -> new EntityNotFoundException("Template not found with id: " + dto.getTemplateId()));
 
             log.debug("Rendering template {} for user {}", template.getId(), user.getId());
-            String renderedContent = templateService.renderTemplate(template.getContent(), user.getUsername());
+            String renderedContent = templateService.renderTemplate(template.getContent(), fieldExtractorUtil.extractFieldsAsMap(user));
 
             message.setTemplate(template);
             message.setContent(renderedContent);
