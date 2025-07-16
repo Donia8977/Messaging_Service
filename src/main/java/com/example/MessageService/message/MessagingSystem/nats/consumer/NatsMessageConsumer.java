@@ -44,18 +44,16 @@ public class NatsMessageConsumer implements ApplicationListener<ApplicationReady
         this.messageMapper = messageMapper;
     }
 
-    // --- START OF FIX 2 ---
-    // This method will now be called AFTER the CommandLineRunner in NatsConfig has finished.
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         log.info("Application is ready. Initializing NATS JetStream subscriptions...");
+
         subscribeToWorkload("email", "messages.tenant.*.email.*");
         subscribeToWorkload("whatsapp", "messages.tenant.*.whatsapp.*");
+        subscribeToWorkload("sms", "messages.tenant.*.sms.*");
 
-        // In the future, you could add:
-        // subscribeToWorkload("sms", "messages.tenant.*.sms.*");
     }
-    // --- END OF FIX 2 ---
 
     private void subscribeToWorkload(String workloadName, String subjectFilter) {
         try {
