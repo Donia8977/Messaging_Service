@@ -55,14 +55,14 @@ public class MessageServiceImpl implements MessageService {
             messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled for future delivery.");
         }
         else {
-            log.info("Message from {} is immediate. Saving and sending to Kafka.", completeMessage.getTenant().getName());
+            log.info("Message from {} is immediate. Saving and sending to broker.", completeMessage.getTenant().getName());
             completeMessage.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(completeMessage);
 
-            messageLogService.createLog(savedMessage, MessageStatus.PENDING, "Message sent to processing queue (Kafka).");
+            messageLogService.createLog(savedMessage, MessageStatus.PENDING, "Message sent to processing queue.");
 
             messageProducer.sendMessage(savedMessage);
-            log.info("Message ID {} successfully sent to Kafka producer.", savedMessage.getId());
+            log.info("Message ID {} successfully sent to producer.", savedMessage.getId());
         }
     }
 

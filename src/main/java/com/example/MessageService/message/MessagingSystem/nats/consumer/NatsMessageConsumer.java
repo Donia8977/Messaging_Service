@@ -50,6 +50,8 @@ public class NatsMessageConsumer implements ApplicationListener<ApplicationReady
     public void onApplicationEvent(ApplicationReadyEvent event) {
         log.info("Application is ready. Initializing NATS JetStream subscriptions...");
         subscribeToWorkload("email", "messages.tenant.*.email.*");
+        subscribeToWorkload("whatsapp", "messages.tenant.*.whatsapp.*");
+
         // In the future, you could add:
         // subscribeToWorkload("sms", "messages.tenant.*.sms.*");
     }
@@ -64,6 +66,8 @@ public class NatsMessageConsumer implements ApplicationListener<ApplicationReady
             Dispatcher dispatcher = connection.createDispatcher();
 
             jetStream.subscribe(subjectFilter, dispatcher, this::onNatsMessage, false, pushOptions);
+
+
 
             log.info("Successfully subscribed to NATS workload '{}' with subject filter '{}'", workloadName, subjectFilter);
 

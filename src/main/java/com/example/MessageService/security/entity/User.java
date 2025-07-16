@@ -24,7 +24,7 @@ public class User {
     @Column(nullable = false)
     private String username;
 
-    @Column(length = 11)
+    @Column(length = 20)
     private String phone;
 
     @Column(nullable = false, unique = true)
@@ -49,19 +49,11 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt=LocalDateTime.now();
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
     private Tenant tenant;
-
-
     public User(Long id) {
         this.id = id;
     }
 
-//    To Stop unidirectional ManyToMany relationship with Segment
-
-//    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-//    @JsonManagedReference("user-segments")
-//    private Set<Segment> segments = new HashSet<>();
 }

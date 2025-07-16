@@ -22,8 +22,6 @@ public class EmailMessageHandler implements MessageHandler {
     private final EmailProviderImpl emailProvider;
     private final MessageRepository messageRepository;
     private final MessageLogService messageLogService;
-
-
     private final EmailMessageHandler self;
 
     public EmailMessageHandler(EmailProviderImpl emailProvider,
