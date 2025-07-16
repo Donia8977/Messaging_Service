@@ -27,3 +27,15 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR:    1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      # Client port
+      - "4222:4222"
+      # HTTP monitoring port
+      - "8222:8222"
+      # Routing port for clustering
+      - "6222:6222"
+    command: "-js"

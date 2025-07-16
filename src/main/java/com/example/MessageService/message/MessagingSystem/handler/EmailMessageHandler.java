@@ -1,4 +1,4 @@
-package com.example.MessageService.message.MessagingSystem.kafka.consumer.handler;
+package com.example.MessageService.message.MessagingSystem.handler;
 
 import com.example.MessageService.Logging.service.MessageLogService;
 import com.example.MessageService.message.MessagingSystem.provider.EmailProviderImpl;
@@ -22,8 +22,6 @@ public class EmailMessageHandler implements MessageHandler {
     private final EmailProviderImpl emailProvider;
     private final MessageRepository messageRepository;
     private final MessageLogService messageLogService;
-
-
     private final EmailMessageHandler self;
 
     public EmailMessageHandler(EmailProviderImpl emailProvider,
@@ -38,15 +36,22 @@ public class EmailMessageHandler implements MessageHandler {
 
     @Override
     @Transactional
-    public void handle(Message message) {
+    public boolean handle(Message message) {
         log.info("Handling EMAIL message ID: {}", message.getId());
         Message managedMessage = messageRepository.findById(message.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Message " + message.getId() + " not found."));
 
-        if (managedMessage.getStatus() == MessageStatus.SENT) {
-            log.warn("Message {} has already been sent. Skipping.", message.getId());
-            return;
+        MessageStatus currentStatus = managedMessage.getStatus();
+
+        if (currentStatus == MessageStatus.SENT) {
+            log.warn("Message {} has already been sent. Acknowledging to remove from queue.", message.getId());
+            return true; // Return true to ACK the message and remove it from the stream.
         }
+        if (currentStatus == MessageStatus.FAILED) {
+            log.warn("Message {} has already been marked as FAILED. Acknowledging to remove from queue.", message.getId());
+            return true; // Return true to ACK the message and prevent redelivery loops.
+        }
+
 
         try {
             emailProvider.send(managedMessage);
@@ -57,11 +62,12 @@ public class EmailMessageHandler implements MessageHandler {
             // Log the success
             messageLogService.createLog(managedMessage, MessageStatus.SENT, "Email delivered successfully by provider.");
             log.info("Successfully sent email for message ID: {}. Status updated to SENT.", managedMessage.getId());
+            return true;
 
         }  catch (Exception e) {
             log.error("Email sending failed for message ID: {}. Error: {}", managedMessage.getId(), e.getMessage(), e);
             self.updateStatusOnFailure(managedMessage.getId() , e.getMessage());
-            throw new RuntimeException("Email sending failed, triggering retry for message ID " + managedMessage.getId(), e);
+            return false;
         }
     }
 
