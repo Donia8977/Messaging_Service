@@ -1,10 +1,10 @@
-package com.example.MessageService.message.MessagingSystem.kafka.consumer.handler;
+package com.example.MessageService.message.MessagingSystem.handler;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.security.entity.ChannelType;
 
 
 public interface MessageHandler {
-    void handle(Message message);
+    boolean handle(Message message);
     ChannelType getSupportedChannel();
 }
 

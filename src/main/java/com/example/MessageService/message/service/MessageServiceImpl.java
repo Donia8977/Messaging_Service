@@ -9,7 +9,6 @@ import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.MessagingSystem.MessageProducer;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.repository.MessageRepository;
-import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.repository.TenantRepository;
@@ -54,7 +53,8 @@ public class MessageServiceImpl implements MessageService {
             Message savedMessage = messageRepository.save(completeMessage);
 
             messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled for future delivery.");
-        } else {
+        }
+        else {
             log.info("Message from {} is immediate. Saving and sending to Kafka.", completeMessage.getTenant().getName());
             completeMessage.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(completeMessage);

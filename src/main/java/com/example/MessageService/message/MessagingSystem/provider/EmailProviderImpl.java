@@ -39,7 +39,8 @@ public class EmailProviderImpl implements EmailProvider {
             mailSender.send(mimeMessage);
             log.info("Email sent successfully via SMTP to {}", to);
 
-        } catch (MessagingException e) {
+        }
+        catch (MessagingException e) {
             log.error("A messaging exception occurred while sending email to {}: {}", message.getUser().getEmail(), e.getMessage());
             throw new RuntimeException("Failed to construct or send email message", e);
         }
