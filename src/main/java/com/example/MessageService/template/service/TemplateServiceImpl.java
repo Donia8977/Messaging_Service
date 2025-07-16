@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -70,12 +71,17 @@ public class TemplateServiceImpl implements TemplateService{
 
 
 
+
     @Override
-    public String renderTemplate(String templateContent, String username) {
-        if (templateContent == null || username == null) {
-            throw new IllegalArgumentException("Template content and username cannot be null");
+    public String renderTemplate(String templateContent, Map<String, String> data) {
+        String rendered = templateContent;
+
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            String placeholder = "${" + entry.getKey() + "}";
+            rendered = rendered.replace(placeholder, entry.getValue());
         }
-        return templateContent.replace("${username}", username);
+
+        return rendered;
     }
 
 }
