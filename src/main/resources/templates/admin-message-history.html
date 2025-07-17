@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Message History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto p-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800">Message History</h1>
+        <a th:href="@{/admin/dashboard}" class="text-gray-600 hover:text-gray-800 transition">
+            ← Back to Admin Dashboard
+        </a>
+    </div>
+
+    <div th:if="${successMessage}" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" th:text="${errorMessage}"></div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 text-left">ID</th>
+                    <th class="py-3 px-4 text-left">Recipient</th>
+                    <th class="py-3 px-4 text-left">Template</th>
+                    <th class="py-3 px-4 text-center">Status</th>
+                    <th class="py-3 px-4 text-left">Sent At</th>
+                    <th class="py-3 px-4 text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="msg : ${messages}">
+                    <td class="py-4 px-4" th:text="${msg.id}">1</td>
+                    <td class="py-4 px-4" th:text="${msg.user?.email ?: 'N/A'}">user@example.com</td>
+                    <td class="py-4 px-4" th:text="${msg.template?.name ?: 'N/A'}">Welcome Email</td>
+                    <td class="py-4 px-4 text-center">
+
+                        <span th:text="${msg.status}"
+                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                              th:classappend="${msg.status.name() == 'SENT' ? 'bg-green-100 text-green-800' : (msg.status.name() == 'PENDING' ? 'bg-blue-100 text-blue-800' : (msg.status.name() == 'FAILED' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))}">
+
+                        </span>
+                    </td>
+                    <td class="py-4 px-4" th:text="${msg.sendAt != null ? #temporals.format(msg.sendAt, 'yyyy-MM-dd HH:mm') : '-'}">2025-07-17 10:30</td>
+                    <td class="py-4 px-4 text-center">
+
+                        <form th:if="${msg.status.name() == 'FAILED'}" th:action="@{/admin/messages/{messageId}/resend(messageId=${msg.id})}" method="post">
+                            <button type="submit" class="text-indigo-600 hover:text-indigo-900 font-semibold">
+                                Resend
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${messages.isEmpty()}">
+                    <td colspan="6" class="py-4 px-4 text-center text-gray-500">No messages have been sent yet.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
