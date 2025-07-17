@@ -64,15 +64,12 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepo.save(user);
 
-        List<UserPreferredChannel> preferredChannels = dto.getPreferredChannels().stream()
-                .map(channelType -> {
-                    UserPreferredChannel upc = new UserPreferredChannel();
-                    upc.setChannelType(channelType);
-                    upc.setUser(savedUser);
-                    return upc;
-                }).collect(Collectors.toList());
+        preferredChannelRepo.deleteAllInBatch(preferredChannelRepo.findByUserId(savedUser.getId()));
 
-        List<UserPreferredChannel> savedChannels = preferredChannelRepo.saveAll(preferredChannels);
+        UserPreferredChannel upc = new UserPreferredChannel();
+        upc.setChannelType(dto.getPreferredChannel());
+        upc.setUser(savedUser);
+        UserPreferredChannel savedChannel = preferredChannelRepo.save(upc);
 
         return new UserResponseDTO(
                 savedUser.getId(),
@@ -82,9 +79,7 @@ public class UserServiceImpl implements UserService {
                 savedUser.getCity(),
                 savedUser.getCreatedAt(),
                 savedUser.getType(),
-                savedChannels.stream()
-                        .map(UserPreferredChannel::getChannelType)
-                        .toList(),
+                List.of(savedChannel.getChannelType()),
                 savedUser.getGender(),
                 savedUser.getTenant().getName()
         );
@@ -243,15 +238,12 @@ public class UserServiceImpl implements UserService {
             user.setPassword(encoder.encode(dto.getPassword()));
         }
 
-        preferredChannelRepo.deleteAll(preferredChannelRepo.findByUserId(userId));
-        List<UserPreferredChannel> preferredChannels = dto.getPreferredChannels().stream()
-                .map(channelType -> {
-                    UserPreferredChannel upc = new UserPreferredChannel();
-                    upc.setChannelType(channelType);
-                    upc.setUser(user);
-                    return upc;
-                }).collect(Collectors.toList());
-        List<UserPreferredChannel> savedChannels = preferredChannelRepo.saveAll(preferredChannels);
+        preferredChannelRepo.deleteAllInBatch(preferredChannelRepo.findByUserId(userId));
+
+        UserPreferredChannel upc = new UserPreferredChannel();
+        upc.setChannelType(dto.getPreferredChannel());
+        upc.setUser(user);
+        UserPreferredChannel savedChannel = preferredChannelRepo.save(upc);
 
         User updatedUser = userRepo.save(user);
 
@@ -263,7 +255,7 @@ public class UserServiceImpl implements UserService {
                 updatedUser.getCity(),
                 updatedUser.getCreatedAt(),
                 updatedUser.getType(),
-                savedChannels.stream().map(UserPreferredChannel::getChannelType).toList(),
+                List.of(savedChannel.getChannelType()),
                 updatedUser.getGender(),
                 updatedUser.getTenant().getName()
         );

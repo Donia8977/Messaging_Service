@@ -1,5 +1,6 @@
 package com.example.MessageService.security.controller;
 
+import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.repository.MessageRepository;
 import com.example.MessageService.message.service.MessageHistoryService;
 import com.example.MessageService.security.dto.RegisterRequestDTO;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -39,8 +41,6 @@ public class AdminDashboardController {
                 .collect(Collectors.toList());
         model.addAttribute("admins", admins);
 
-        long totalMessages = messageHistoryService.getTotalMessageCount();
-        model.addAttribute("totalMessageCount", totalMessages);
         return "admin-dashboard";
     }
 
@@ -50,7 +50,7 @@ public class AdminDashboardController {
     @GetMapping("/create-admin")
     public String showCreateAdminForm(Model model) {
         model.addAttribute("adminRequest", new RegisterRequestDTO());
-        return "admin-create-form"; // Renders admin-create-form.html
+        return "admin-create-form";
     }
 
     /**
@@ -67,13 +67,11 @@ public class AdminDashboardController {
             return "admin-create-form"; // If there are validation errors, show the form again
         }
         try {
-            // Use the existing AdminService to create the admin
+
             adminService.createAdmin(req);
-            // Add a success message to be displayed on the dashboard after redirecting
             redirectAttributes.addFlashAttribute("successMessage", "New administrator created successfully!");
-            return "redirect:/admin/dashboard"; // Redirect to the dashboard to prevent double submission
+            return "redirect:/admin/dashboard";
         } catch (EmailAlreadyExistsException e) {
-            // If the email already exists, show an error message on the form
             model.addAttribute("errorMessage", e.getMessage());
             return "admin-create-form";
         }

@@ -1,6 +1,7 @@
 package com.example.MessageService.message.controller;
 
 import com.example.MessageService.message.entity.Message;
+import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.service.MessageHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/messages")
@@ -24,6 +26,12 @@ public class MessageHistoryWebController {
     public String showMessageHistory(Model model) {
         List<Message> messages = messageHistoryService.getAllMessages();
         model.addAttribute("messages", messages);
+
+        Map<MessageStatus, Long> statusCounts = messageHistoryService.getMessageCountsByStatus();
+        model.addAttribute("statusCounts", statusCounts);
+
+        model.addAttribute("totalMessageCount", messageHistoryService.getTotalMessageCount());
+
         return "admin-message-history";
     }
 

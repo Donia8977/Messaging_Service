@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface MessageRepository extends JpaRepository<Message , Long> {
 
@@ -16,5 +17,8 @@ public interface MessageRepository extends JpaRepository<Message , Long> {
 
     List<Message> findByStatusAndScheduledAtLessThanEqual(MessageStatus status, LocalDateTime now);
 
+
+    @Query("SELECT m.status as status, COUNT(m) as count FROM Message m GROUP BY m.status")
+    List<Map<String, Object>> countByStatus();
 }
 

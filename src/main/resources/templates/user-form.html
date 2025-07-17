@@ -82,16 +82,24 @@
                 </div>
             </div>
 
-            <!-- Preferred Channels -->
             <div>
-                <label class="block text-sm font-medium text-gray-700">Preferred Channels</label>
-                <div class="mt-2 space-y-2">
-                    <div th:each="channel : ${allChannels}" class="flex items-center">
-                        <input th:id="${'channel-' + channel.name()}" th:field="*{preferredChannels}" th:value="${channel}"
-                               type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <label th:for="${'channel-' + channel.name()}" class="ml-3 block text-sm text-gray-900" th:text="${channel.name()}"></label>
-                    </div>
-                </div>
+                <label for="preferredChannel" class="block text-sm font-medium text-gray-700">
+                    Preferred Channel
+                </label>
+
+                <select id="preferredChannel" th:field="*{preferredChannel}"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 bg-white rounded-md shadow-sm
+                   focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                    <option value="" disabled>-- Select a Channel --</option>
+
+                    <option th:each="channel : ${allChannels}"
+                            th:value="${channel}"
+                            th:text="${channel.name()}">
+                    </option>
+                </select>
+
+                <p th:if="${#fields.hasErrors('preferredChannel')}" th:errors="*{preferredChannel}" class="text-red-500 text-xs mt-1"></p>
             </div>
 
             <!-- Submit Button -->
