@@ -121,8 +121,8 @@ public class SegmentServiceImpl implements SegmentService{
         criteria.put("userTypes", ruleRequest.getUserTypes());
        // criteria.put("gender", ruleRequest.getGenders());
 
-       // List<User> foundUsers = userRepository.findUsersByCriteria(criteria, tenantId);
-        List<User> foundUsers = userRepository.findUsersByAnyCriteria(criteria, tenantId);
+        List<User> foundUsers = userRepository.findUsersByCriteria(criteria, tenantId);
+       // List<User> foundUsers = userRepository.findUsersByAnyCriteria(criteria, tenantId);
         Set<User> users = Set.copyOf(foundUsers);
 
         if (users.isEmpty()) {
@@ -132,7 +132,7 @@ public class SegmentServiceImpl implements SegmentService{
         Segment segment = new Segment();
         segment.setName(ruleRequest.getName());
         try {
-            String rulesAsJson = objectMapper.writeValueAsString(criteria);
+            String rulesAsJson = objectMapper.writeValueAsString(ruleRequest);
             segment.setRulesJson(rulesAsJson);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize segment rules to JSON", e);
@@ -143,6 +143,11 @@ public class SegmentServiceImpl implements SegmentService{
 
         Segment saved = segmentRepository.save(segment);
         return segmentMapper.mapToResponse(saved);
+    }
+
+    @Override
+    public List<SegmentResponse> getAllSegmentsForCurrentTenant() {
+        return List.of();
     }
 
 

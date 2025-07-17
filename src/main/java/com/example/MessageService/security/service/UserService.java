@@ -2,6 +2,7 @@ package com.example.MessageService.security.service;
 
 
 import com.example.MessageService.security.dto.CreateUserRequestDTO;
+import com.example.MessageService.security.dto.UpdateUserRequestDTO;
 import com.example.MessageService.security.dto.UserResponseDTO;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ public interface UserService {
     List<UserResponseDTO> getUsersByTenant(Long tenantId);
     void deleteUser(Long userId, Long tenantId);
     void deleteAllUsersByTenant(Long tenantId);
+    UserResponseDTO getUserById(Long userId, Long tenantId);
+    UserResponseDTO updateUser(Long userId, Long tenantId, UpdateUserRequestDTO dto);
 }
 
 

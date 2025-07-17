@@ -3,15 +3,19 @@ package com.example.MessageService.message.service;
 import com.example.MessageService.Logging.service.MessageLogService;
 import com.example.MessageService.message.MessagingSystem.provider.EmailProvider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
+import com.example.MessageService.message.dto.TargetType;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.MessagingSystem.MessageProducer;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.repository.MessageRepository;
+import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.repository.TenantRepository;
 import com.example.MessageService.security.repository.UserRepository;
+import com.example.MessageService.segment.entity.Segment;
+import com.example.MessageService.segment.repository.SegmentRepository;
 import com.example.MessageService.template.entity.Template;
 import com.example.MessageService.template.repository.TemplateRepository;
 import com.example.MessageService.template.service.FieldExtractorUtil;
@@ -22,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -38,31 +43,73 @@ public class MessageServiceImpl implements MessageService {
     private final EmailProvider emailProvider;
     private final MessageLogService messageLogService;
     private final FieldExtractorUtil fieldExtractorUtil;
+    private final SegmentRepository segmentRepository;
 
     @Override
     @Transactional
     public void processAndRouteMessage(MessageSchedulerDto requestDto) {
-        log.info("Processing request for tenant {} and target {}. Building complete message entity first.",
+
+        if (requestDto.getTargetType() == TargetType.SEGMENT) {
+            processSegmentMessage(requestDto);
+        } else {
+            processUserMessage(requestDto);
+        }
+    }
+
+    private void processUserMessage(MessageSchedulerDto requestDto) {
+        log.info("Processing USER message for tenant {} and target {}.",
+                requestDto.getTenantId(), requestDto.getTargetId());
+        Message completeMessage = buildCompleteMessageFromDto(requestDto);
+        saveAndRouteMessage(completeMessage);
+    }
+
+    private void processSegmentMessage(MessageSchedulerDto requestDto) {
+        log.info("Processing SEGMENT message for tenant {} and segment {}.",
                 requestDto.getTenantId(), requestDto.getTargetId());
 
-        Message completeMessage = buildCompleteMessageFromDto(requestDto);
+        Segment segment = segmentRepository.findById(requestDto.getTargetId())
+                .orElseThrow(() -> new EntityNotFoundException("Segment not found with id: " + requestDto.getTargetId()));
 
-        if (requestDto.getScheduledAt() != null || requestDto.getCronExpression() != null) {
-            log.info("Message from {} is scheduled. Saving to database.", completeMessage.getTenant().getName());
-            completeMessage.setStatus(MessageStatus.SCHEDULED);
-            Message savedMessage = messageRepository.save(completeMessage);
-
-            messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled for future delivery.");
+        List<User> targetUsers = List.copyOf(segment.getUsers());
+        if (targetUsers.isEmpty()) {
+            log.warn("Segment {} contains no users. Aborting.", segment.getId());
+            return;
         }
-        else {
-            log.info("Message from {} is immediate. Saving and sending to broker.", completeMessage.getTenant().getName());
-            completeMessage.setStatus(MessageStatus.PENDING);
-            Message savedMessage = messageRepository.save(completeMessage);
 
+        Template template = templateRepository.findById(requestDto.getTemplateId())
+                .orElseThrow(() -> new EntityNotFoundException("Template not found with id: " + requestDto.getTemplateId()));
+
+        log.info("Segment {} contains {} users. Creating a message for each.", segment.getId(), targetUsers.size());
+
+        for (User user : targetUsers) {
+            Message message = new Message();
+            message.setTenant(segment.getTenant());
+            message.setUser(user);
+            message.setSegment(segment);
+            message.setTemplate(template);
+            message.setChannel(requestDto.getChannel());
+            message.setPriority(requestDto.getPriority());
+            message.setScheduledAt(requestDto.getScheduledAt());
+            message.setCronExpression(requestDto.getCronExpression());
+            message.setCreatedAt(LocalDateTime.now());
+
+            String renderedContent = templateService.renderTemplate(template.getContent(), fieldExtractorUtil.extractFieldsAsMap(user));
+            message.setContent(renderedContent);
+
+            saveAndRouteMessage(message);
+        }
+    }
+
+    private void saveAndRouteMessage(Message message) {
+        if (message.getScheduledAt() != null || message.getCronExpression() != null) {
+            message.setStatus(MessageStatus.SCHEDULED);
+            Message savedMessage = messageRepository.save(message);
+            messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled.");
+        } else {
+            message.setStatus(MessageStatus.PENDING);
+            Message savedMessage = messageRepository.save(message);
             messageLogService.createLog(savedMessage, MessageStatus.PENDING, "Message sent to processing queue.");
-
             messageProducer.sendMessage(savedMessage);
-            log.info("Message ID {} successfully sent to producer.", savedMessage.getId());
         }
     }
 

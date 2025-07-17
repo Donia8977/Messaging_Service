@@ -12,9 +12,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
@@ -59,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers( "/register", "/login",
                                 "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/dashboard/**").hasRole("TENANT")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/segments/**").hasRole("TENANT")
                         .requestMatchers("/api/tenants/*/users").hasRole("TENANT")
                         .requestMatchers("/api/admins/**").hasRole("ADMIN")
@@ -74,7 +77,8 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/dashboard", true)
+                       // .defaultSuccessUrl("/dashboard", true)
+                        .successHandler(customAuthenticationSuccessHandler())
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )
@@ -89,5 +93,22 @@ public class SecurityConfig {
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+
+            String targetUrl = "/dashboard";
+
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                if ("ROLE_ADMIN".equals(authority.getAuthority())) {
+                    targetUrl = "/admin/dashboard";
+                    break;
+                }
+            }
+
+            response.sendRedirect(request.getContextPath() + targetUrl);
+        };
     }
 }

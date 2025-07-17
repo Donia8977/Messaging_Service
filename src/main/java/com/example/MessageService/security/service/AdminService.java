@@ -36,4 +36,8 @@ public class AdminService {
         Tenant saved = tenantRepo.save(admin);
         return new RegisterResponseDTO(saved.getId(), saved.getEmail());
     }
+
+    public void deleteAdmin(String email) {
+        tenantRepo.deleteAll();
+    }
 }

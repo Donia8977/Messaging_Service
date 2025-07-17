@@ -6,6 +6,7 @@ import com.example.MessageService.security.exception.EmailAlreadyExistsException
 import com.example.MessageService.security.exception.TenantNotFoundException;
 import com.example.MessageService.security.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,9 @@ public class AuthServiceImpl implements AuthService {
     private final TenantRepository tenantRepo;
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
+
+    @Value("${security.admin.registration-key}")
+    private String adminRegistrationKey;
 
     @Autowired
     public AuthServiceImpl(AuthenticationManager authManager,
@@ -47,7 +51,15 @@ public class AuthServiceImpl implements AuthService {
         t.setPhone(req.getPhone());
         t.setEmail(req.getEmail());
         t.setPassword(encoder.encode(req.getPassword()));
-        t.setRole(UserRole.TENANT);
+//        t.setRole(UserRole.TENANT);
+
+        String providedKey = req.getRegistrationKey();
+
+        if (providedKey != null && providedKey.equals(adminRegistrationKey)) {
+            t.setRole(UserRole.ADMIN);
+        } else {
+            t.setRole(UserRole.TENANT);
+        }
         Tenant saved = tenantRepo.save(t);
         return new RegisterResponseDTO(saved.getId(), saved.getEmail());
     }
@@ -82,5 +94,10 @@ public class AuthServiceImpl implements AuthService {
 
         tenantRepo.delete(tenant);
     }
+
+    public void deleteAllTenants(){
+        tenantRepo.deleteAll();
+    }
+
 
 }

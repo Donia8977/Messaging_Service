@@ -15,4 +15,5 @@ public interface SegmentService {
     SegmentResponse getSegmentById(Long Id, Long tenantId);
     void deleteSegment (Long Id, Long tenantId);
     SegmentResponse createSegmentFromRules (SegmentRuleRequest ruleRequest, Long tenantId);
+    List<SegmentResponse> getAllSegmentsForCurrentTenant();
 }

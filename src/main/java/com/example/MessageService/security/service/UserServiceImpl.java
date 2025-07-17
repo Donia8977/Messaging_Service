@@ -6,6 +6,7 @@ import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.repository.MessageRepository;
 import com.example.MessageService.message.repository.MessageRepositoryWeb;
 import com.example.MessageService.security.dto.CreateUserRequestDTO;
+import com.example.MessageService.security.dto.UpdateUserRequestDTO;
 import com.example.MessageService.security.dto.UserResponseDTO;
 import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
@@ -188,5 +189,83 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepo.deleteAll(usersToDelete);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserById(Long userId, Long tenantId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        if (!user.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("You are not authorized to view this user.");
+        }
+
+
+        List<ChannelType> channels = preferredChannelRepo.findByUserId(user.getId()).stream()
+                .map(UserPreferredChannel::getChannelType)
+                .toList();
+
+        return new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getPhone(),
+                user.getEmail(),
+                user.getCity(),
+                user.getCreatedAt(),
+                user.getType(),
+                channels,
+                user.getGender(),
+                user.getTenant().getName()
+        );
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateUser(Long userId, Long tenantId, UpdateUserRequestDTO dto) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+
+        if (!user.getTenant().getId().equals(tenantId)) {
+            throw new UnauthorizedException("You are not authorized to edit this user.");
+        }
+
+        user.setUsername(dto.getUsername());
+        user.setPhone(dto.getPhone());
+        user.setEmail(dto.getEmail());
+        user.setCity(dto.getCity());
+        user.setType(dto.getUserType());
+        user.setGender(dto.getGender());
+
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(encoder.encode(dto.getPassword()));
+        }
+
+        preferredChannelRepo.deleteAll(preferredChannelRepo.findByUserId(userId));
+        List<UserPreferredChannel> preferredChannels = dto.getPreferredChannels().stream()
+                .map(channelType -> {
+                    UserPreferredChannel upc = new UserPreferredChannel();
+                    upc.setChannelType(channelType);
+                    upc.setUser(user);
+                    return upc;
+                }).collect(Collectors.toList());
+        List<UserPreferredChannel> savedChannels = preferredChannelRepo.saveAll(preferredChannels);
+
+        User updatedUser = userRepo.save(user);
+
+        return new UserResponseDTO(
+                updatedUser.getId(),
+                updatedUser.getUsername(),
+                updatedUser.getPhone(),
+                updatedUser.getEmail(),
+                updatedUser.getCity(),
+                updatedUser.getCreatedAt(),
+                updatedUser.getType(),
+                savedChannels.stream().map(UserPreferredChannel::getChannelType).toList(),
+                updatedUser.getGender(),
+                updatedUser.getTenant().getName()
+        );
     }
 }
