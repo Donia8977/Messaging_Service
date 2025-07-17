@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Direct Message - Select Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto p-8">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800">Send a Direct Message</h1>
+        <p class="text-xl text-gray-600 mt-2">Step 2 of 2: Choose a Template</p>
+    </div>
+
+    <form th:action="@{/dashboard/send-direct/process}" method="post" class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+        <!-- Hidden input to carry over the userId -->
+        <input type="hidden" name="userId" th:value="${userId}" />
+
+        <fieldset>
+            <legend class="text-2xl font-bold text-gray-900 mb-4">Select a Message Template</legend>
+            <div class="space-y-4">
+                <!-- Loop over templates and create radio buttons -->
+                <div th:each="template : ${templates}" class="p-4 border rounded-lg has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400 transition-colors">
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            <input th:id="'template-' + ${template.id}" name="templateId" th:value="${template.id}" type="radio" required class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label th:for="'template-' + ${template.id}" class="font-medium text-gray-800" th:text="${template.name}">Template Name</label>
+                            <p class="text-gray-500" th:text="${#strings.abbreviate(template.content, 120)}">Template preview...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${templates.isEmpty()}" class="text-center p-8 border-2 border-dashed rounded-lg">
+                    <h2 class="text-xl font-semibold text-gray-700">No Templates Found</h2>
+                    <p class="text-gray-500 mt-2">You need to create a template before sending a message.</p>
+                    <a th:href="@{/dashboard/templates/new}" class="mt-4 inline-block bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">Create a Template</a>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="mt-10 pt-6 border-t border-gray-200 flex justify-between items-center">
+            <a th:href="@{/dashboard/send-direct/select-user}" class="text-gray-600 hover:text-gray-900 font-medium">← Back to Users</a>
+            <button type="submit" th:disabled="${templates.isEmpty()}" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+                Confirm & Send
+            </button>
+        </div>
+    </form>
+</div>
+</body>
+</html>
