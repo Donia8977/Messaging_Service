@@ -11,7 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -53,5 +56,25 @@ public class MessageHistoryServiceImpl implements MessageHistoryService {
     @Override
     public long getTotalMessageCount() {
         return messageRepository.count();
+    }
+
+    @Override
+    public Map<MessageStatus, Long> getMessageCountsByStatus() {
+        Map<MessageStatus, Long> statusCounts = new EnumMap<>(MessageStatus.class);
+
+        for (MessageStatus status : MessageStatus.values()) {
+            statusCounts.put(status, 0L);
+        }
+
+        List<Map<String, Object>> results = messageRepository.countByStatus();
+
+        for (Map<String, Object> result : results) {
+            MessageStatus status = (MessageStatus) result.get("status");
+            Long count = (Long) result.get("count");
+            statusCounts.put(status, count);
+        }
+
+        return statusCounts;
+
     }
 }
