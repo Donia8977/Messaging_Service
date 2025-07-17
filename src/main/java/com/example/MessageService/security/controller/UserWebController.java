@@ -1,6 +1,9 @@
 package com.example.MessageService.security.controller;
 
+import com.example.MessageService.exception.NotFoundException;
+import com.example.MessageService.exception.UnauthorizedException;
 import com.example.MessageService.security.dto.CreateUserRequestDTO;
+import com.example.MessageService.security.dto.UpdateUserRequestDTO;
 import com.example.MessageService.security.dto.UserResponseDTO;
 import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
@@ -106,4 +109,124 @@ public class UserWebController {
         }
         return "redirect:/dashboard/users";
     }
+
+//    @GetMapping("/{userId}/edit")
+//    public String showEditUserForm(@PathVariable Long userId, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+//        Tenant currentTenant = getCurrentTenant(userDetails);
+//        try {
+//            UserResponseDTO userDto = userService.getUserById(userId, currentTenant.getId());
+//
+//            // Map UserResponseDTO to CreateUserRequestDTO for form binding
+//            CreateUserRequestDTO userRequest = new CreateUserRequestDTO();
+//            userRequest.setUsername(userDto.getUsername());
+//            userRequest.setEmail(userDto.getEmail());
+//            userRequest.setPhone(userDto.getPhone());
+//            userRequest.setCity(userDto.getCity());
+//            userRequest.setUserType(userDto.getUserType());
+//            userRequest.setGender(userDto.getGender());
+//            userRequest.setPreferredChannels(userDto.getPreferredChannels());
+//            // Password is intentionally left blank for security
+//
+//            model.addAttribute("userRequest", userRequest);
+//            model.addAttribute("userId", userId);
+//            model.addAttribute("allUserTypes", UserType.values());
+//            model.addAttribute("allChannels", ChannelType.values());
+//            return "user-edit-form";
+//        } catch (NotFoundException | UnauthorizedException e) {
+//            return "redirect:/dashboard/users";
+//        }
+//    }
+//
+//    @PostMapping("/{userId}/update")
+//    public String updateUser(@PathVariable Long userId,
+//                             @Valid @ModelAttribute("userRequest") CreateUserRequestDTO userRequest,
+//                             BindingResult bindingResult,
+//                             @AuthenticationPrincipal UserDetails userDetails,
+//                             RedirectAttributes redirectAttributes,
+//                             Model model) {
+//
+//        if (bindingResult.hasErrors()) {
+//            model.addAttribute("userId", userId);
+//            model.addAttribute("allUserTypes", UserType.values());
+//            model.addAttribute("allChannels", ChannelType.values());
+//            return "user-edit-form";
+//        }
+//
+//        Tenant currentTenant = getCurrentTenant(userDetails);
+//        try {
+//            userService.updateUser(userId, currentTenant.getId(), userRequest);
+//            redirectAttributes.addFlashAttribute("successMessage", "User '" + userRequest.getUsername() + "' updated successfully!");
+//            return "redirect:/dashboard/users";
+//        } catch (Exception e) {
+//            model.addAttribute("errorMessage", "Failed to update user: " + e.getMessage());
+//
+//            return "redirect:/dashboard/users";
+//        }
+//    }
+
+    @GetMapping("/{userId}/edit")
+    public String showEditUserForm(@PathVariable Long userId, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        Tenant currentTenant = getCurrentTenant(userDetails);
+        try {
+            UserResponseDTO userDto = userService.getUserById(userId, currentTenant.getId());
+
+
+            UpdateUserRequestDTO userRequest = new UpdateUserRequestDTO();
+            userRequest.setUsername(userDto.getUsername());
+            userRequest.setEmail(userDto.getEmail());
+            userRequest.setPhone(userDto.getPhone());
+            userRequest.setCity(userDto.getCity());
+            userRequest.setUserType(userDto.getUserType());
+            userRequest.setPreferredChannels(userDto.getPreferredChannels());
+
+            model.addAttribute("userRequest", userRequest);
+            model.addAttribute("userId", userId);
+            model.addAttribute("allUserTypes", UserType.values());
+            model.addAttribute("allChannels", ChannelType.values());
+
+            model.addAttribute("userRequest", userRequest);
+            return "user-edit-form";
+        } catch (Exception e) {
+            return "redirect:/dashboard/users";
+        }
+    }
+
+    @PostMapping("/{userId}/update")
+    public String updateUser(@PathVariable Long userId,
+                             // Use the new DTO for validation
+                             @Valid @ModelAttribute("userRequest") UpdateUserRequestDTO userRequest,
+                             BindingResult bindingResult,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             RedirectAttributes redirectAttributes,
+                             Model model) {
+
+        if (bindingResult.hasErrors()) {
+            // This now correctly validates against the new DTO's rules
+            model.addAttribute("userId", userId);
+            model.addAttribute("allUserTypes", UserType.values());
+            model.addAttribute("allChannels", ChannelType.values());
+            return "user-edit-form";
+        }
+
+        Tenant currentTenant = getCurrentTenant(userDetails);
+        try {
+            // We need to convert the Update DTO to the Create DTO that the service expects
+            // This is a simple way to avoid changing the service layer
+//            UpdateUserRequestDTO serviceDto = new UpdateUserRequestDTO();
+//            serviceDto.setUsername(userRequest.getUsername());
+//            serviceDto.setEmail(userRequest.getEmail());
+//            serviceDto.setPassword(userRequest.getPassword());
+            // ... copy all other fields ...
+
+            userService.updateUser(userId, currentTenant.getId(), userRequest);
+
+            redirectAttributes.addFlashAttribute("successMessage", "User '" + userRequest.getUsername() + "' updated successfully!");
+            return "redirect:/dashboard/users";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update user. Error: " + e.getMessage());
+            return "redirect:/dashboard/users";
+        }
+    }
+
+
 }

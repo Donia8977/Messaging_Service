@@ -10,7 +10,7 @@
 
 <div class="container mx-auto mt-10 mb-10">
     <div class="bg-white p-8 rounded-lg shadow-lg">
-        <!-- Header Section -->
+
         <div class="flex justify-between items-center mb-6 border-b pb-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">Your Users</h1>
@@ -42,13 +42,12 @@
 
         <!-- User Table -->
         <div class="overflow-x-auto">
-            <!-- Case for when there are no users -->
+
             <div th:if="${#lists.isEmpty(users)}" class="text-center py-10 px-6 bg-gray-50 rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-700">No Users Found</h3>
                 <p class="text-gray-500 mt-2">You haven't created any users yet. Get started by creating one!</p>
             </div>
 
-            <!-- Table displayed only if users exist -->
             <table th:unless="${#lists.isEmpty(users)}" class="min-w-full bg-white">
                 <thead class="bg-gray-800 text-white">
                 <tr>
@@ -74,6 +73,11 @@
                     </td>
                     <td class="text-left py-3 px-4" th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2025-07-12 18:00</td>
                     <td class="text-center py-3 px-4">
+                        <a th:href="@{/dashboard/users/{userId}/edit(userId=${user.id})}"
+                           class="text-indigo-600 hover:text-indigo-900 font-semibold mr-4">
+                            Edit
+                        </a>
+
                         <form th:action="@{/dashboard/users/{userId}/delete(userId=${user.id})}" method="post" class="inline">
                             <button type="submit" class="text-red-500 hover:text-red-700 font-semibold"
                                     onclick="return confirm('Are you sure you want to delete this user?');">
