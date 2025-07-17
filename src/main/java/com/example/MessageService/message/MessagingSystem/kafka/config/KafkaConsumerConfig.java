@@ -13,6 +13,7 @@ import org.springframework.util.backoff.FixedBackOff;
 @Configuration
 @Profile("kafka")
 public class KafkaConsumerConfig {
+
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
             ConsumerFactory<String, Object> consumerFactory,
@@ -21,15 +22,35 @@ public class KafkaConsumerConfig {
         var recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
         var backOff = new FixedBackOff(2000L, 3L);
         var errorHandler = new DefaultErrorHandler(recoverer, backOff);
-
         errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setCommonErrorHandler(errorHandler);
+        factory.setConcurrency(2);
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Object> highPriorityKafkaListenerContainerFactory(
+            ConsumerFactory<String, Object> consumerFactory,
+            KafkaTemplate<String, Object> kafkaTemplate) {
+
+        var recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
+        var backOff = new FixedBackOff(1000L, 3L);
+        var errorHandler = new DefaultErrorHandler(recoverer, backOff);
+        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        factory.setCommonErrorHandler(errorHandler);
+
         factory.setConcurrency(4);
 
         return factory;
     }
+    // --- END OF NEW CODE ---
 }

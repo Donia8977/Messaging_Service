@@ -23,6 +23,7 @@ import com.example.MessageService.template.service.TemplateService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -40,7 +41,6 @@ public class MessageServiceImpl implements MessageService {
     private final TemplateService templateService;
     private final MessageProducer messageProducer;
     private final MessageMapper messageMapper;
-    private final EmailProvider emailProvider;
     private final MessageLogService messageLogService;
     private final FieldExtractorUtil fieldExtractorUtil;
     private final SegmentRepository segmentRepository;
@@ -100,12 +100,32 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
+
     private void saveAndRouteMessage(Message message) {
-        if (message.getScheduledAt() != null || message.getCronExpression() != null) {
+        // Case 1: The message is recurring (a CRON expression is provided)
+        if (message.getCronExpression() != null && CronExpression.isValidExpression(message.getCronExpression())) {
+            log.info("Saving RECURRING message template for user {}.", message.getUser().getId());
+
+            message.setStatus(MessageStatus.RECURRING);
+
+            // Calculate the *first* execution time for this specific recurring message.
+            CronExpression cron = CronExpression.parse(message.getCronExpression());
+            LocalDateTime firstExecutionTime = cron.next(LocalDateTime.now());
+            message.setScheduledAt(firstExecutionTime);
+
+            Message savedTemplate = messageRepository.save(message);
+            messageLogService.createLog(savedTemplate, MessageStatus.RECURRING, "Recurring message template created. First instance for user " + message.getUser().getId() + " scheduled for: " + firstExecutionTime);
+
+            // Case 2: The message is a one-time scheduled event
+        } else if (message.getScheduledAt() != null) {
+            log.info("Saving one-time SCHEDULED message for user {}.", message.getUser().getId());
             message.setStatus(MessageStatus.SCHEDULED);
             Message savedMessage = messageRepository.save(message);
-            messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message accepted and scheduled.");
+            messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message for user " + message.getUser().getId() + " accepted and scheduled for future delivery.");
+
+            // Case 3: The message is immediate
         } else {
+            log.info("Processing IMMEDIATE message for user {}.", message.getUser().getId());
             message.setStatus(MessageStatus.PENDING);
             Message savedMessage = messageRepository.save(message);
             messageLogService.createLog(savedMessage, MessageStatus.PENDING, "Message sent to processing queue.");

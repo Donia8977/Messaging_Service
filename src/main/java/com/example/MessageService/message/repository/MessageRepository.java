@@ -13,5 +13,8 @@ public interface MessageRepository extends JpaRepository<Message , Long> {
 
     @Query("SELECT m FROM Message m WHERE m.status = :status AND m.scheduledAt <= :now")
     List<Message> findDueScheduledMessages(@Param("status") MessageStatus status, @Param("now") LocalDateTime now);
+
+    List<Message> findByStatusAndScheduledAtLessThanEqual(MessageStatus status, LocalDateTime now);
+
 }
 

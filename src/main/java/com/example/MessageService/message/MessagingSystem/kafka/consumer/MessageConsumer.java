@@ -38,26 +38,40 @@ public class MessageConsumer {
         log.info("Registered Message Handlers: {}", handlerRegistry.keySet());
     }
 
+
     @KafkaListener(
-            topics = {
-                    "email-high-priority-topic", "email-standard-priority-topic",
-                    "sms-high-priority-topic", "sms-standard-priority-topic"
-            },
-            groupId = "unified-message-consumer-group",
+            topics = {"email-high-priority-topic", "sms-high-priority-topic", "whatsapp-high-priority-topic"},
+            groupId = "high-priority-consumer-group",
+            containerFactory = "highPriorityKafkaListenerContainerFactory"
+    )
+    public void listenHighPriority(@Payload MessageSchedulerDto dto, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("HIGH-PRIORITY consumer received message on topic '{}'", topic);
+        processMessage(dto);
+    }
+
+
+    @KafkaListener(
+            topics = {"email-standard-priority-topic", "sms-standard-priority-topic", "whatsapp-standard-priority-topic"},
+            groupId = "standard-priority-consumer-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
+    public void listenStandardPriority(@Payload MessageSchedulerDto dto, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("STANDARD-PRIORITY consumer received message on topic '{}'", topic);
+        processMessage(dto);
+    }
 
-    public void listen(@Payload MessageSchedulerDto dto, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    private void processMessage(MessageSchedulerDto dto) {
         Message message = messageMapper.toEntity(dto);
-        log.info("Kafka consumer received message on topic '{}' for channel {} and target ID {}", topic, message.getChannel(), dto.getTargetId());
         MessageHandler handler = handlerRegistry.get(message.getChannel());
+
         if (handler != null) {
             boolean success = handler.handle(message);
             if (!success) {
                 throw new RuntimeException("Handler failed to process message for target ID " + dto.getTargetId() + ". Triggering Kafka retry mechanism.");
             }
         } else {
-            log.warn("No message handler found for channel: {}. Skipping message for target ID: {}", message.getChannel(), dto.getTargetId());
+            log.warn("No message handler found for channel: {}. Skipping message.", message.getChannel());
         }
     }
+
 }

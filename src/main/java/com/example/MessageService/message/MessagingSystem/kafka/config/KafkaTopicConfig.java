@@ -47,5 +47,21 @@ public class KafkaTopicConfig {
                 .build();
     }
 
+    @Bean
+    public NewTopic whatsappHighPriorityTopic() {
+        return TopicBuilder.name("whatsapp-high-priority-topic")
+                .partitions(HIGH_PRIORITY_PARTITIONS)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic whatsappStandardPriorityTopic() {
+        return TopicBuilder.name("whatsapp-standard-priority-topic")
+                .partitions(STANDARD_PRIORITY_PARTITIONS)
+                .replicas(1)
+                .build();
+    }
+
 
 }
