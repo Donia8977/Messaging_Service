@@ -50,6 +50,10 @@ The complete source code and setup instructions for the gateway can be found in 
 
 The application is built around a modular, service-oriented architecture where the API Gateway is the front door.
 
+![Design](design.drawio.png)
+
+
+
 ```
 Client -> API Gateway (Port 8081) -> Messaging Service (Port 8080) -> Message Broker -> Handlers
 ```
