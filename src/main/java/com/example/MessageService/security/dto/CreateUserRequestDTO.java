@@ -34,9 +34,8 @@ public class CreateUserRequestDTO {
     @NotNull(message = "userType is required")
     private UserType userType;
 
-
-    @NotNull(message = "you must add at least one preferred channel")
-    private List<ChannelType> preferredChannels;
+    @NotNull(message = "A preferred channel must be selected")
+    private ChannelType preferredChannel;
 
 
     private String gender;
