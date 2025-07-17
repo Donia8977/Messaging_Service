@@ -1,7 +1,7 @@
 package com.example.MessageService.message.service;
 
 import com.example.MessageService.Logging.service.MessageLogService;
-import com.example.MessageService.message.MessagingSystem.MessageProducer;
+import com.example.MessageService.message.MessageBroker.MessageProducer;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.repository.MessageRepository;

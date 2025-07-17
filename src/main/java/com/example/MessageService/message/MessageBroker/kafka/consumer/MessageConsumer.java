@@ -1,9 +1,9 @@
-package com.example.MessageService.message.MessagingSystem.kafka.consumer;
+package com.example.MessageService.message.MessageBroker.kafka.consumer;
 
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.mapper.MessageMapper;
-import com.example.MessageService.message.MessagingSystem.handler.MessageHandler;
+import com.example.MessageService.message.MessageBroker.handler.MessageHandler;
 import com.example.MessageService.security.entity.ChannelType;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

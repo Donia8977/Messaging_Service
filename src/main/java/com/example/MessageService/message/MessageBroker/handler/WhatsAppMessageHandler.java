@@ -1,13 +1,12 @@
-package com.example.MessageService.message.MessagingSystem.handler;
+package com.example.MessageService.message.MessageBroker.handler;
 
 import com.example.MessageService.Logging.service.MessageLogService;
-import com.example.MessageService.message.MessagingSystem.provider.WhatsAppProvider;
+import com.example.MessageService.message.MessageBroker.provider.WhatsAppProvider;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.repository.MessageRepository;
 import com.example.MessageService.security.entity.ChannelType;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;

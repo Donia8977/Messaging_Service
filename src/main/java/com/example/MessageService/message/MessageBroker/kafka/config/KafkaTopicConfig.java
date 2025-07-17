@@ -1,4 +1,4 @@
-package com.example.MessageService.message.MessagingSystem.kafka.config;
+package com.example.MessageService.message.MessageBroker.kafka.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;

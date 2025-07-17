@@ -1,9 +1,8 @@
-package com.example.MessageService.message.MessagingSystem.kafka.partitioner;
+package com.example.MessageService.message.MessageBroker.kafka.partitioner;
 
 import org.apache.kafka.clients.producer.Partitioner;
 import org.apache.kafka.common.Cluster;
 import org.apache.kafka.common.utils.Utils;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Map;
 

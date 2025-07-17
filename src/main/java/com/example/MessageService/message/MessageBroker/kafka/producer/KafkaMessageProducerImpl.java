@@ -1,6 +1,6 @@
-package com.example.MessageService.message.MessagingSystem.kafka.producer;
+package com.example.MessageService.message.MessageBroker.kafka.producer;
 
-import com.example.MessageService.message.MessagingSystem.MessageProducer;
+import com.example.MessageService.message.MessageBroker.MessageProducer;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.Priority;

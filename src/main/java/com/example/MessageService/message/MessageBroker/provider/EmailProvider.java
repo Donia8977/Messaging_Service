@@ -1,4 +1,4 @@
-package com.example.MessageService.message.MessagingSystem.provider;
+package com.example.MessageService.message.MessageBroker.provider;
 
 import com.example.MessageService.message.entity.Message;
 

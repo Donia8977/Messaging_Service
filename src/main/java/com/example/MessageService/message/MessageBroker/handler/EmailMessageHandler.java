@@ -1,7 +1,7 @@
-package com.example.MessageService.message.MessagingSystem.handler;
+package com.example.MessageService.message.MessageBroker.handler;
 
 import com.example.MessageService.Logging.service.MessageLogService;
-import com.example.MessageService.message.MessagingSystem.provider.EmailProviderImpl;
+import com.example.MessageService.message.MessageBroker.provider.EmailProviderImpl;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
 import com.example.MessageService.message.repository.MessageRepository;

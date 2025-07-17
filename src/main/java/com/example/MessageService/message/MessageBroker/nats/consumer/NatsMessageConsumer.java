@@ -1,6 +1,6 @@
-package com.example.MessageService.message.MessagingSystem.nats.consumer;
+package com.example.MessageService.message.MessageBroker.nats.consumer;
 
-import com.example.MessageService.message.MessagingSystem.handler.MessageHandler;
+import com.example.MessageService.message.MessageBroker.handler.MessageHandler;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.mapper.MessageMapper;

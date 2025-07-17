@@ -1,10 +1,9 @@
-package com.example.MessageService.message.MessagingSystem.handler;
+package com.example.MessageService.message.MessageBroker.provider;
+
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.security.entity.ChannelType;
 
-
-public interface MessageHandler {
-    boolean handle(Message message);
+public interface SmsProvider {
+    void send(Message  message);
     ChannelType getSupportedChannel();
 }
-

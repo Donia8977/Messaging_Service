@@ -1,4 +1,4 @@
-package com.example.MessageService.message.MessagingSystem.nats.config;
+package com.example.MessageService.message.MessageBroker.nats.config;
 
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Configuration
 @Profile("nats")

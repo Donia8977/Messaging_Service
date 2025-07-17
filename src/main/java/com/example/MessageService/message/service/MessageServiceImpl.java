@@ -1,15 +1,13 @@
 package com.example.MessageService.message.service;
 
 import com.example.MessageService.Logging.service.MessageLogService;
-import com.example.MessageService.message.MessagingSystem.provider.EmailProvider;
 import com.example.MessageService.message.dto.MessageSchedulerDto;
 import com.example.MessageService.message.dto.TargetType;
 import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.MessageStatus;
-import com.example.MessageService.message.MessagingSystem.MessageProducer;
+import com.example.MessageService.message.MessageBroker.MessageProducer;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.message.repository.MessageRepository;
-import com.example.MessageService.security.entity.ChannelType;
 import com.example.MessageService.security.entity.Tenant;
 import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.repository.TenantRepository;
