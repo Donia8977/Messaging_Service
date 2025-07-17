@@ -13,18 +13,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Component
 @Slf4j
-public class WhatsAppMessageHandler implements MessageHandler {
+public class WhatsAppMessageHandler extends AbstractMessageHandler {
 
     private final WhatsAppProvider whatsAppProvider;
     private final MessageRepository messageRepository;
     private final MessageLogService messageLogService;
-    private final WhatsAppMessageHandler self; // Self-injection for transactions
+    private final WhatsAppMessageHandler self;
 
     public WhatsAppMessageHandler(WhatsAppProvider whatsAppProvider,
-                                  MessageRepository messageRepository, MessageLogService messageLogService,
+                                  MessageRepository messageRepository,
+                                  MessageLogService messageLogService,
                                   @Lazy WhatsAppMessageHandler self) {
+        super(messageRepository, messageLogService);
         this.whatsAppProvider = whatsAppProvider;
         this.messageRepository = messageRepository;
         this.messageLogService = messageLogService;
@@ -47,6 +51,7 @@ public class WhatsAppMessageHandler implements MessageHandler {
         try {
             whatsAppProvider.send(managedMessage);
             managedMessage.setStatus(MessageStatus.SENT);
+            managedMessage.setSendAt(LocalDateTime.now());
             messageRepository.save(managedMessage);
             messageLogService.createLog(managedMessage, MessageStatus.SENT, "WhatsApp message delivered successfully by provider.");
             log.info("Successfully sent WhatsApp message for message ID: {}.", managedMessage.getId());
@@ -54,33 +59,11 @@ public class WhatsAppMessageHandler implements MessageHandler {
 
         } catch (Exception e) {
             log.error("WhatsApp sending failed for message ID: {}. Error: {}", managedMessage.getId(), e.getMessage());
-            self.updateStatusOnFailure(managedMessage, e.getMessage());
+            self.updateStatusOnFailure(managedMessage.getId(), e.getMessage());
             return false;
         }
     }
 
-    // This logic is identical to the EmailMessageHandler. In a large system,
-    // you might move this to a shared abstract base class to avoid duplication.
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStatusOnFailure(Message message, String errorMessage) {
-        try {
-            if (message.getRetryCount() < message.getMaxRetries()) {
-                message.setRetryCount(message.getRetryCount() + 1);
-                message.setStatus(MessageStatus.RETRYING);
-                String retryNote = "Send attempt failed. Reason: " + errorMessage;
-                messageLogService.createLog(message, MessageStatus.RETRYING, retryNote);
-                log.info("Incremented retry count to {} for message ID: {}", message.getRetryCount(), message.getId());
-            } else {
-                message.setStatus(MessageStatus.FAILED);
-                String finalFailureNote = "Max retries reached. Delivery failed permanently. Final error: " + errorMessage;
-                messageLogService.createLog(message, MessageStatus.FAILED, finalFailureNote);
-                log.warn("Max retries reached for message ID: {}. Marking as FAILED.", message.getId());
-            }
-            messageRepository.save(message);
-        } catch (Exception dbEx) {
-            log.error("CRITICAL: Could not update failure state for message ID: {}. This may cause infinite retries.", message.getId(), dbEx);
-        }
-    }
 
     @Override
     public ChannelType getSupportedChannel() {

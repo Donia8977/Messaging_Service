@@ -15,18 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j
-public class SmsMessageHandler implements MessageHandler {
+public class SmsMessageHandler extends AbstractMessageHandler {
 
-    private final SmsProviderImpl smsProvider; // Inject the SMS-specific provider
+    private final SmsProviderImpl smsProvider;
     private final MessageRepository messageRepository;
     private final MessageLogService messageLogService;
-    private final SmsMessageHandler self; // Self-injection for transactions
+    private final SmsMessageHandler self;
 
 
 
     public SmsMessageHandler(SmsProviderImpl smsProvider,
-                             MessageRepository messageRepository, MessageLogService messageLogService,
+                             MessageRepository messageRepository,
+                             MessageLogService messageLogService,
                              @Lazy SmsMessageHandler self) {
+        super(messageRepository, messageLogService);
         this.smsProvider = smsProvider;
         this.messageRepository = messageRepository;
         this.messageLogService = messageLogService;
@@ -57,32 +59,11 @@ public class SmsMessageHandler implements MessageHandler {
 
         } catch (Exception e) {
             log.error("SMS sending failed for message ID: {}. Error: {}", managedMessage.getId(), e.getMessage());
-            self.updateStatusOnFailure(managedMessage, e.getMessage());
+            self.updateStatusOnFailure(managedMessage.getId(), e.getMessage());
             return false;
         }
     }
 
-    // This failure logic is duplicated from the other handlers, which is the nature of this separate architecture.
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStatusOnFailure(Message message, String errorMessage) {
-        try {
-            if (message.getRetryCount() < message.getMaxRetries()) {
-                message.setRetryCount(message.getRetryCount() + 1);
-                message.setStatus(MessageStatus.RETRYING);
-                String retryNote = "Send attempt failed. Reason: " + errorMessage;
-                messageLogService.createLog(message, MessageStatus.RETRYING, retryNote);
-                log.info("Incremented retry count to {} for message ID: {}", message.getRetryCount(), message.getId());
-            } else {
-                message.setStatus(MessageStatus.FAILED);
-                String finalFailureNote = "Max retries reached. Delivery failed permanently. Final error: " + errorMessage;
-                messageLogService.createLog(message, MessageStatus.FAILED, finalFailureNote);
-                log.warn("Max retries reached for message ID: {}. Marking as FAILED.", message.getId());
-            }
-            messageRepository.save(message);
-        } catch (Exception dbEx) {
-            log.error("CRITICAL: Could not update failure state for message ID: {}. This may cause infinite retries.", message.getId(), dbEx);
-        }
-    }
 
     @Override
     public ChannelType getSupportedChannel() {

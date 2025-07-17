@@ -7,4 +7,3 @@ public interface MessageHandler {
     boolean handle(Message message);
     ChannelType getSupportedChannel();
 }
-

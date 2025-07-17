@@ -15,16 +15,12 @@ public class WhatsAppProviderImpl implements WhatsAppProvider {
 
     @Value("${twilio.account.sid}")
     private String accountSid;
-
     @Value("${twilio.auth.token}")
     private String authToken;
-
     @Value("${twilio.whatsapp.from}")
     private String fromPhoneNumber;
 
-    /**
-     * Initializes the Twilio SDK with credentials when the service is created.
-     */
+
     @PostConstruct
     public void init() {
         Twilio.init(accountSid, authToken);
@@ -33,21 +29,17 @@ public class WhatsAppProviderImpl implements WhatsAppProvider {
 
     @Override
     public void send(Message message) {
-        // Twilio requires phone numbers to be in E.164 format (e.g., +14155238886)
-        // and prefixed with "whatsapp:" for this channel.
+
         PhoneNumber to = new PhoneNumber("whatsapp:" + message.getUser().getPhone());
         PhoneNumber from = new PhoneNumber("whatsapp:" + fromPhoneNumber);
         String body = message.getContent();
 
         try {
             log.info("Attempting to send WhatsApp message from {} to {} with body: '{}'", from, to, body);
-
             com.twilio.rest.api.v2010.account.Message.creator(to, from, body).create();
-
             log.info("WhatsApp message sent successfully to {}", to);
         } catch (ApiException e) {
             log.error("Failed to send WhatsApp message via Twilio to {}. API Error: {} - {}", to, e.getCode(), e.getMessage());
-            // Re-throw as a runtime exception to be caught by the message handler.
             throw new RuntimeException("Failed to send WhatsApp message", e);
         }
     }

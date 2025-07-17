@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 
 @Component
 @Slf4j
-public class EmailMessageHandler implements MessageHandler {
+public class EmailMessageHandler extends AbstractMessageHandler {
 
     private final EmailProviderImpl emailProvider;
     private final MessageRepository messageRepository;
@@ -27,6 +27,7 @@ public class EmailMessageHandler implements MessageHandler {
     public EmailMessageHandler(EmailProviderImpl emailProvider,
                                MessageRepository messageRepository, MessageLogService messageLogService,
                                @Lazy EmailMessageHandler self) {
+        super(messageRepository, messageLogService);
         this.emailProvider = emailProvider;
         this.messageRepository = messageRepository;
         this.messageLogService = messageLogService;
@@ -52,7 +53,6 @@ public class EmailMessageHandler implements MessageHandler {
             return true; // Return true to ACK the message and prevent redelivery loops.
         }
 
-
         try {
             emailProvider.send(managedMessage);
             managedMessage.setStatus(MessageStatus.SENT);
@@ -71,36 +71,6 @@ public class EmailMessageHandler implements MessageHandler {
         }
     }
 
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStatusOnFailure(Long messageId , String errorMessage) {
-        try {
-            messageRepository.findById(messageId).ifPresent(msg -> {
-                if (msg.getRetryCount() < msg.getMaxRetries()) {
-                    msg.setRetryCount(msg.getRetryCount() + 1);
-
-                    msg.setStatus(MessageStatus.RETRYING);
-                    messageRepository.save(msg);
-
-                    String retryNote = "Send attempt failed. Reason: " + errorMessage;
-                    messageLogService.createLog(msg, MessageStatus.RETRYING, retryNote);
-
-                    log.info("Incremented retry count to {} for message ID: {}", msg.getRetryCount(), messageId);
-                } else {
-                    msg.setStatus(MessageStatus.FAILED);
-
-                    messageRepository.save(msg);
-                    String finalFailureNote = "Max retries reached. Delivery failed permanently. Final error: " + errorMessage;
-                    messageLogService.createLog(msg, MessageStatus.FAILED, finalFailureNote);
-
-                    log.warn("Max retries reached for message ID: {}. Marking as FAILED.", messageId);
-                }
-                messageRepository.save(msg);
-            });
-        } catch (Exception dbEx) {
-            log.error("CRITICAL: Could not update failure state for message ID: {}. This may cause infinite retries.", messageId, dbEx);
-        }
-    }
 
     @Override
     public ChannelType getSupportedChannel() {
