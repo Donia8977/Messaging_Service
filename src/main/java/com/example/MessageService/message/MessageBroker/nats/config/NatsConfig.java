@@ -50,9 +50,7 @@ public class NatsConfig {
     @Bean
     public CommandLineRunner setupNatsStream(JetStreamManagement jetStreamManagement) {
         return args -> {
-            // --- START OF FIX ---
 
-            // Define the desired configuration for our stream
             StreamConfiguration streamConfig = StreamConfiguration.builder()
                     .name(streamName)
                     .subjects(streamSubjects)
@@ -61,27 +59,22 @@ public class NatsConfig {
 
             StreamInfo streamInfo = null;
             try {
-                // Check if the stream already exists
                 streamInfo = jetStreamManagement.getStreamInfo(streamName);
             } catch (JetStreamApiException e) {
                 if (e.getApiErrorCode() == 10059) { // 10059 == "stream not found"
                     log.info("NATS stream '{}' not found, will create it.", streamName);
                 } else {
-                    throw e; // Re-throw other unexpected errors
+                    throw e;
                 }
             }
 
             if (streamInfo == null) {
-                // Stream does not exist, so create it.
                 jetStreamManagement.addStream(streamConfig);
                 log.info("NATS stream '{}' created successfully.", streamName);
             } else {
-                // Stream exists, so update it to match the current configuration.
                 jetStreamManagement.updateStream(streamConfig);
                 log.info("NATS stream '{}' updated successfully.", streamName);
             }
-
-            // --- END OF FIX ---
         };
     }
 }

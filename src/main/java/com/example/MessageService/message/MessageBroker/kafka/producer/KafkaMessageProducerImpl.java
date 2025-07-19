@@ -6,6 +6,7 @@ import com.example.MessageService.message.entity.Message;
 import com.example.MessageService.message.entity.Priority;
 import com.example.MessageService.message.mapper.MessageMapper;
 import com.example.MessageService.security.entity.ChannelType;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -14,17 +15,12 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @Profile("kafka")
+@AllArgsConstructor
 public class KafkaMessageProducerImpl implements MessageProducer {
 
     private final KafkaTemplate<String, MessageSchedulerDto> kafkaTemplate;
     private final MessageMapper messageMapper;
 
-
-    public KafkaMessageProducerImpl(KafkaTemplate<String, MessageSchedulerDto> kafkaTemplate,
-                                    MessageMapper messageMapper) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.messageMapper = messageMapper;
-    }
 
     @Override
     public void sendMessage(Message message) {

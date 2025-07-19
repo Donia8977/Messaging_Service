@@ -46,7 +46,6 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public void processAndRouteMessage(MessageSchedulerDto requestDto) {
-
         if (requestDto.getTargetType() == TargetType.SEGMENT) {
             processSegmentMessage(requestDto);
         } else {
@@ -99,14 +98,18 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void saveAndRouteMessage(Message message) {
-        // Case 1: The message is recurring (a CRON expression is provided)
-        if (message.getCronExpression() != null && CronExpression.isValidExpression(message.getCronExpression())) {
-            log.info("Saving RECURRING message template for user {}.", message.getUser().getId());
+    private void saveAndRouteMessage(Message message){
+        if (message.getCronExpression() != null) {
+            //we check it here, because there is no @Annotation to validate cron directly in the DTO
+            if (!CronExpression.isValidExpression(message.getCronExpression())) {
+                log.error("Invalid CRON expression provided: '{}'. Rejecting request.", message.getCronExpression());
+                throw new IllegalArgumentException("The provided CRON expression '" + message.getCronExpression() + "' is not valid.");
+            }
 
+            log.info("Saving RECURRING message template for user {}.", message.getUser().getId());
             message.setStatus(MessageStatus.RECURRING);
 
-            // Calculate the *first* execution time for this specific recurring message.
+            // Calculate the first execution time for this specific recurring message.
             CronExpression cron = CronExpression.parse(message.getCronExpression());
             LocalDateTime firstExecutionTime = cron.next(LocalDateTime.now());
             message.setScheduledAt(firstExecutionTime);
@@ -114,14 +117,12 @@ public class MessageServiceImpl implements MessageService {
             Message savedTemplate = messageRepository.save(message);
             messageLogService.createLog(savedTemplate, MessageStatus.RECURRING, "Recurring message template created. First instance for user " + message.getUser().getId() + " scheduled for: " + firstExecutionTime);
 
-            // Case 2: The message is a one-time scheduled event
         } else if (message.getScheduledAt() != null) {
             log.info("Saving one-time SCHEDULED message for user {}.", message.getUser().getId());
             message.setStatus(MessageStatus.SCHEDULED);
             Message savedMessage = messageRepository.save(message);
             messageLogService.createLog(savedMessage, MessageStatus.SCHEDULED, "Message for user " + message.getUser().getId() + " accepted and scheduled for future delivery.");
 
-            // Case 3: The message is immediate
         } else {
             log.info("Processing IMMEDIATE message for user {}.", message.getUser().getId());
             message.setStatus(MessageStatus.PENDING);

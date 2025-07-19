@@ -69,7 +69,6 @@ public class MessageSchedulerServiceImpl {
         log.info("Found {} recurring templates to process.", dueTemplates.size());
         for (Message template : dueTemplates) {
             try {
-
                 Message instance = createInstanceFromTemplate(template);
                 messageRepository.save(instance);
                 log.info("Created new scheduled instance (ID: {}) from recurring template (ID: {}).", instance.getId(), template.getId());

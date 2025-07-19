@@ -60,6 +60,8 @@ public class MessageConsumer {
         processMessage(dto);
     }
 
+
+
     private void processMessage(MessageSchedulerDto dto) {
         Message message = messageMapper.toEntity(dto);
         MessageHandler handler = handlerRegistry.get(message.getChannel());
