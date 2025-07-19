@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Templates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto mt-10 mb-10">
+    <div class="bg-white p-8 rounded-lg shadow-lg">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Your Templates</h1>
+                <p class="text-gray-500">A list of all message templates you have created.</p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard/templates/new}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300 inline-block">
+                    + Create New Template
+                </a>
+                <a th:href="@{/dashboard}" class="ml-2 text-gray-600 hover:text-gray-800 transition">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Success Message Area -->
+        <div th:if="${successMessage}" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100" role="alert">
+            <span class="font-medium">Success!</span> <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- Templates Table -->
+        <div class="overflow-x-auto">
+            <div th:if="${#lists.isEmpty(templates)}" class="text-center py-10 px-6 bg-gray-50 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-700">No Templates Found</h3>
+                <p class="text-gray-500 mt-2">You haven't created any templates yet.</p>
+            </div>
+
+            <table th:unless="${#lists.isEmpty(templates)}" class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">ID</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Template Name</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Created At</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:each="template : ${templates}" class="border-b border-gray-200 hover:bg-gray-100">
+                    <td class="text-left py-3 px-4" th:text="${template.id}">1</td>
+                    <td class="text-left py-3 px-4" th:text="${template.name}">Welcome Email</td>
+                    <td class="text-left py-3 px-4" th:text="${#temporals.format(template.createdAt, 'yyyy-MM-dd HH:mm')}">2025-07-12 19:00</td>
+                    <td class="text-right py-3 px-4">
+                        <form th:action="@{/dashboard/templates/{id}/delete(id=${template.id})}" method="post" class="inline">
+                            <button type="submit"
+                                    class="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded text-sm transition duration-300"
+                                    onclick="return confirm('Are you sure you want to delete this template? This action cannot be undone.')">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

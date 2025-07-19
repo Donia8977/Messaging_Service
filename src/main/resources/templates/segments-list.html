@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Segments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto mt-10 mb-10">
+    <div class="bg-white p-8 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Your Segments</h1>
+                <p class="text-gray-500">A list of all user segments you have created.</p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard/segments/new}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300 inline-block">
+                    + Create New Segment
+                </a>
+                <a th:href="@{/dashboard}" class="ml-2 text-gray-600 hover:text-gray-800 transition">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100" role="alert">
+            <span class="font-medium">Success!</span> <span th:text="${successMessage}"></span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <div th:if="${#lists.isEmpty(segments)}" class="text-center py-10 px-6 bg-gray-50 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-700">No Segments Found</h3>
+                <p class="text-gray-500 mt-2">You haven't created any segments yet.</p>
+            </div>
+
+            <table th:unless="${#lists.isEmpty(segments)}" class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">ID</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Segment Name</th>
+                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">User Count</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:each="segment : ${segments}" class="border-b border-gray-200 hover:bg-gray-100">
+                    <td class="text-left py-3 px-4" th:text="${segment.id}">1</td>
+                    <td class="text-left py-3 px-4" th:text="${segment.name}">High-Value Customers</td>
+                    <td class="text-left py-3 px-4" th:text="${#lists.size(segment.userIds)}">15</td>
+
+                    <td class="text-center py-3 px-4">
+                        <form th:action="@{/dashboard/segments/{id}/delete(id=${segment.id})}" method="post" class="inline-block">
+                            <button type="submit"
+                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs"
+                                    onclick="return confirm('Are you sure you want to delete this segment?');">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

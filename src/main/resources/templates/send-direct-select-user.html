@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Direct Message - Select User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto p-8">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800">Send a Direct Message</h1>
+        <p class="text-xl text-gray-600 mt-2">Step 1 of 2: Choose a Recipient</p>
+    </div>
+
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+        <div th:if="${users.isEmpty()}" class="text-center p-10">
+            <h3 class="text-xl font-semibold text-gray-700">No Users Found</h3>
+            <p class="text-gray-500 mt-2">You need to create a user before you can send a direct message.</p>
+            <a th:href="@{/dashboard/users/new}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Create a User</a>
+        </div>
+
+        <div th:unless="${users.isEmpty()}" class="space-y-3">
+
+            <a th:each="user : ${users}" th:href="@{/dashboard/send-direct/select-template(userId=${user.id})}"
+               class="block p-4 border rounded-lg hover:bg-gray-100 hover:border-blue-500 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-bold text-lg text-gray-800" th:text="${user.username}">John Doe</p>
+                        <p class="text-sm text-gray-600" th:text="${user.email}">john.doe@example.com</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full" th:text="${user.userType}">REGULAR</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="mt-8 text-center">
+            <a th:href="@{/dashboard}" class="text-sm font-medium text-gray-600 hover:text-gray-900">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
