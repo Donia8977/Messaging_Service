@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
 
     @Value("${security.admin.registration-key}")
-    private String adminRegistrationKey;
+    private String superAdminRegistrationKey;
 
     @Autowired
     public AuthServiceImpl(AuthenticationManager authManager,
@@ -51,12 +51,14 @@ public class AuthServiceImpl implements AuthService {
         t.setPhone(req.getPhone());
         t.setEmail(req.getEmail());
         t.setPassword(encoder.encode(req.getPassword()));
-//        t.setRole(UserRole.TENANT);
 
         String providedKey = req.getRegistrationKey();
 
-        if (providedKey != null && providedKey.equals(adminRegistrationKey)) {
-            t.setRole(UserRole.ADMIN);
+        if (providedKey != null && providedKey.equals(superAdminRegistrationKey)) {
+            if (tenantRepo.existsByRole(UserRole.SUPER_ADMIN)) {
+                throw new IllegalStateException("A Super Admin account already exists. The Super Admin key can only be used once.");
+            }
+            t.setRole(UserRole.SUPER_ADMIN);
         } else {
             t.setRole(UserRole.TENANT);
         }

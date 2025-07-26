@@ -1,14 +1,22 @@
 package com.example.MessageService.security.service;
 
 
+import com.example.MessageService.security.dto.AdminResponseDTO;
 import com.example.MessageService.security.dto.RegisterRequestDTO;
 import com.example.MessageService.security.dto.RegisterResponseDTO;
 import com.example.MessageService.security.entity.Tenant;
+import com.example.MessageService.security.entity.User;
 import com.example.MessageService.security.entity.UserRole;
 import com.example.MessageService.security.exception.EmailAlreadyExistsException;
 import com.example.MessageService.security.repository.TenantRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
@@ -21,6 +29,7 @@ public class AdminService {
         this.encoder = encoder;
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public RegisterResponseDTO createAdmin(RegisterRequestDTO req) {
         if (tenantRepo.existsByEmail(req.getEmail())) {
             throw new EmailAlreadyExistsException(req.getEmail());
@@ -37,7 +46,44 @@ public class AdminService {
         return new RegisterResponseDTO(saved.getId(), saved.getEmail());
     }
 
-    public void deleteAdmin(String email) {
-        tenantRepo.deleteAll();
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public void deleteAdmin(Long adminId) {
+
+        Tenant adminToDelete = tenantRepo.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Admin with ID " + adminId + " not found."));
+
+        String currentAdminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (adminToDelete.getEmail().equalsIgnoreCase(currentAdminEmail)) {
+            throw new IllegalArgumentException("Action forbidden: You cannot delete your own account.");
+        }
+
+        if (adminToDelete.getRole() == UserRole.SUPER_ADMIN) {
+            throw new SecurityException("Action forbidden: Cannot delete another SUPER_ADMIN account.");
+        }
+
+
+        tenantRepo.delete(adminToDelete);
     }
-}
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN' ,'ADMIN')")
+    public List<AdminResponseDTO> getAllAdmins(){
+
+        List<Tenant> admins = tenantRepo.findAll().stream()
+                .filter(tenant -> tenant.getRole() == UserRole.ADMIN || tenant.getRole() == UserRole.SUPER_ADMIN)
+                .collect(Collectors.toList());
+
+        return admins.stream()
+                .map(admin -> new AdminResponseDTO(
+                        admin.getId(),
+                        admin.getName(),
+                        admin.getEmail(),
+                        admin.getPhone(),
+                        admin.getCreatedAt(),
+                        admin.getRole()))
+                .collect(Collectors.toList());
+    }
+
+
+    }
+
