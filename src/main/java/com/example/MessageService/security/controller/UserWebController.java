@@ -125,6 +125,12 @@ public class UserWebController {
             userRequest.setCity(userDto.getCity());
             userRequest.setUserType(userDto.getUserType());
             userRequest.setUserType(userDto.getUserType());
+            userRequest.setGender(userDto.getGender());
+
+            if (userDto.getPreferredChannels() != null && !userDto.getPreferredChannels().isEmpty()) {
+
+                userRequest.setPreferredChannel(userDto.getPreferredChannels().get(0));
+            }
 
             model.addAttribute("userRequest", userRequest);
             model.addAttribute("userId", userId);
@@ -161,8 +167,12 @@ public class UserWebController {
             redirectAttributes.addFlashAttribute("successMessage", "User '" + userRequest.getUsername() + "' updated successfully!");
             return "redirect:/dashboard/users";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update user. Error: " + e.getMessage());
-            return "redirect:/dashboard/users";
+
+            model.addAttribute("userId", userId);
+            model.addAttribute("allUserTypes", UserType.values());
+            model.addAttribute("allChannels", ChannelType.values());
+            model.addAttribute("errorMessage", "Failed to update user: " + e.getMessage());
+            return "user-edit-form";
         }
     }
 
