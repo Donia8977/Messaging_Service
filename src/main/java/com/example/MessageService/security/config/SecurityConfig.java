@@ -5,6 +5,7 @@ import com.example.MessageService.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -61,11 +62,20 @@ public class SecurityConfig {
                         .requestMatchers( "/register", "/login",
                                 "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/dashboard/**").hasRole("TENANT")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/dashboard").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/admin/create-admin", "/admin/admins/*/delete").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/admin/messages").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/segments/**").hasRole("TENANT")
                         .requestMatchers("/api/tenants/*/users").hasRole("TENANT")
                         .requestMatchers("/api/admins/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admins/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/favicon.ico").permitAll()
+
+                        .requestMatchers(HttpMethod.POST , "/api/admins/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT ,"/api/admins/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE , "/api/admins/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET ,"/api/admins/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET , "/api/admins/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
@@ -77,7 +87,6 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                       // .defaultSuccessUrl("/dashboard", true)
                         .successHandler(customAuthenticationSuccessHandler())
                         .failureUrl("/login?error=true")
                         .permitAll()
@@ -101,11 +110,12 @@ public class SecurityConfig {
 
             String targetUrl = "/dashboard";
 
-            for (GrantedAuthority authority : authentication.getAuthorities()) {
-                if ("ROLE_ADMIN".equals(authority.getAuthority())) {
-                    targetUrl = "/admin/dashboard";
-                    break;
-                }
+            var authorities = authentication.getAuthorities();
+
+            if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
+                targetUrl = "/admin/dashboard";
+            } else if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                targetUrl = "/admin/viewer-dashboard";
             }
 
             response.sendRedirect(request.getContextPath() + targetUrl);
